@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:matchup/screens/login_screen.dart';
+import 'package:matchup/screens/login/login_screen.dart';
 
 void main() {
   runApp(MyApp());

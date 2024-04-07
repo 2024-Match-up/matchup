@@ -60,6 +60,7 @@ flutter:
   assets:
   - lib/assets/images/
   - lib/screens/
+  - lib/assets/fonts/
 
 
   # To add assets to your application, add an assets section, like this:
@@ -92,3 +93,9 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
+
+  fonts:
+    - family: Timmana
+      fonts:
+        - asset: lib/assets/fonts/Timmana-Regular.ttf
+          weight: 200
