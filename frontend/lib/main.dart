@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:matchup/screens/login/login_screen.dart';
 
+import 'package:intl/intl.dart';
+import 'package:intl/date_symbol_data_local.dart';
+
 void main() {
-  runApp(MyApp());
+  initializeDateFormatting('ko_KR', null).then((_) {
+    runApp(MyApp());
+  });
 }
+
 
 class MyApp extends StatelessWidget {
   @override
