@@ -17,20 +17,15 @@ class _BottomNavBarState extends State<BottomNavBar> {
 
   // 각 탭의 위젯을 저장할 리스트를 생성합니다.
   final List<Widget> _widgetOptions = [
-    // ExerciseScreen(),  // 홈 탭에 해당하는 위젯
-    // ScheduleScreen(),  // 일정 탭에 해당하는 위젯
-    // CameraScreen(),  // 카메라 탭에 해당하는 위젯
-    // RecordScreen(),  // 측정기록 탭에 해당하는 위젯
-    Text('Home Screen'), // 임시 위젯
-    Text('Schedule Screen'),
-    Text('Add Screen'),
-    Text('Settings Screen'),
+    // ExerciseScreen(),  // 운동 페이지
+    CalendarScreen(),  // 달력 페이지
+    CameraScreen(),    // 카메라 페이지
+    // RecordScreen(),    // 측정기록 페이지
   ];
 
   @override
   void initState() {
     super.initState();
-    // Set status bar color
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
       statusBarColor: Color(0xFFBBBBEE), // Top bar color
       statusBarIconBrightness: Brightness.light, // Status bar icons' color
@@ -65,6 +60,9 @@ class _BottomNavBarState extends State<BottomNavBar> {
         // AppBar의 높이를 70.0으로 설정
         toolbarHeight: 70.0,
       ),
+      body: Center(
+        child: _widgetOptions.elementAt(_selectedIndex),
+      ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           border: Border(
@@ -76,27 +74,22 @@ class _BottomNavBarState extends State<BottomNavBar> {
           showSelectedLabels: false,
           showUnselectedLabels: false,
           items: <BottomNavigationBarItem>[
-
             BottomNavigationBarItem(
               icon: Icon(Icons.fitness_center, size: 30),
               label: '운동',
             ),
-
             BottomNavigationBarItem(
               icon: Icon(Icons.calendar_month, size: 30),
               label: '달력',
             ),
-
             BottomNavigationBarItem(
               icon: Icon(Icons.photo_camera, size: 30),
               label: '카메라',
             ),
-
             BottomNavigationBarItem(
               icon: Icon(Icons.timeline, size: 30),
               label: '그래프',
             ),
-            
           ],
           currentIndex: _selectedIndex,
           selectedItemColor: Color(0xFF000000),
@@ -108,14 +101,13 @@ class _BottomNavBarState extends State<BottomNavBar> {
   }
 }
 
-void main() {
-  runApp(MaterialApp(
-    title: 'match up!',
-    theme: ThemeData(
-      primaryColor: Color(0xFFBBBBEE),
-      scaffoldBackgroundColor:
-          Colors.grey[300],
-    ),
-    home: BottomNavBar(),
-  ));
-}
+// void main() {
+//   runApp(MaterialApp(
+//     title: 'Match Up!',
+//     theme: ThemeData(
+//       primaryColor: Color(0xFFBBBBEE),
+//       scaffoldBackgroundColor: Colors.grey[300],
+//     ),
+//     home: BottomNavBar(),
+//   ));
+// }
