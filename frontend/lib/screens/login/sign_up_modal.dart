@@ -5,6 +5,7 @@ void showSignUpModal(BuildContext context) {
     context: context,
     builder: (BuildContext context) {
       return Dialog(
+        backgroundColor: Colors.white, 
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20.0),
         ),
@@ -15,7 +16,7 @@ void showSignUpModal(BuildContext context) {
             children: <Widget>[
               Text(
                 '회원가입',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black), // Text color set to black
                 textAlign: TextAlign.center,
               ),
               SizedBox(height: 20),
@@ -35,8 +36,8 @@ void showSignUpModal(BuildContext context) {
                       child: Text('회원가입'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Color(0xFFBBBBEE), 
-                        foregroundColor: Colors.white, 
-                        minimumSize: Size(0, 36), // 높이 설정, 너비는 Expanded로 조절
+                        foregroundColor: Colors.black, 
+                        minimumSize: Size(0, 36),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10.0),
                         ),
@@ -44,7 +45,7 @@ void showSignUpModal(BuildContext context) {
                       ),
                     ),
                   ),
-                  SizedBox(width: 8), // 버튼 사이의 간격
+                  SizedBox(width: 8),
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {
@@ -53,8 +54,8 @@ void showSignUpModal(BuildContext context) {
                       child: Text('중복 확인'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Color(0xFFBBBBEE), 
-                        foregroundColor: Colors.white, 
-                        minimumSize: Size(0, 36), // 높이 설정, 너비는 Expanded로 조절
+                        foregroundColor: Colors.white, // Button text color remains white for contrast
+                        minimumSize: Size(0, 36),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10.0),
                         ),
@@ -75,12 +76,13 @@ void showSignUpModal(BuildContext context) {
 
 Widget buildTextField(String hintText, {bool isPassword = false}) {
   return Container(
-    height: 50, // 텍스트 필드 높이 설정
+    height: 50,
     child: TextField(
-      obscureText: isPassword, // 비밀번호 필드 여부 설정
+      obscureText: isPassword,
       textAlignVertical: TextAlignVertical.center,
       decoration: InputDecoration(
         hintText: hintText,
+        hintStyle: TextStyle(color: Colors.black), 
         contentPadding: EdgeInsets.symmetric(horizontal: 10.0),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10.0),
@@ -105,8 +107,8 @@ class IconLabel extends StatelessWidget {
     return Column(
       children: <Widget>[
         Icon(icon, size: 48),
-        SizedBox(height: 8), // 아이콘과 텍스트 사이의 간격 설정
-        Text(label),
+        SizedBox(height: 8),
+        Text(label, style: TextStyle(color: Colors.black)), 
       ],
     );
   }
