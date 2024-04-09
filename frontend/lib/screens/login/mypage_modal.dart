@@ -24,8 +24,13 @@ void showMyPageModal(BuildContext context) {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: <Widget>[
-                  IconLabel(icon: Icons.male, label: '남'),
-                  IconLabel(icon: Icons.female, label: '여'),
+                  GestureDetector(
+                    // onTap: () => 
+                    child: IconLabel(icon: Icons.male, label: '남'),
+                  ),
+                  GestureDetector(
+                    child: IconLabel(icon: Icons.female, label: '여'),
+                  ),
                 ],
               ),
               SizedBox(height: 20),
