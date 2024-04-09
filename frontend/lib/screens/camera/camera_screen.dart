@@ -1,74 +1,45 @@
-import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'body_scan.dart';
 
-class CameraScreen extends StatefulWidget {
-  @override
-  _CameraScreenState createState() => _CameraScreenState();
-}
-
-class _CameraScreenState extends State<CameraScreen> {
-  CameraController? _controller;
-  Future<void>? _initializeControllerFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    _initCamera();
-  }
-
-  void _initCamera() async {
-    // 사용 가능한 카메라 목록을 가져옵니다.
-    final cameras = await availableCameras();
-
-    // 특정 카메라를 선택합니다. 일반적으로 후면 카메라를 사용합니다.
-    final firstCamera = cameras.firstWhere(
-      (camera) => camera.lensDirection == CameraLensDirection.back,
-    );
-
-    // 카메라 컨트롤러를 초기화합니다.
-    _controller = CameraController(
-      firstCamera,
-      ResolutionPreset.high,
-      imageFormatGroup: ImageFormatGroup.yuv420,
-    );
-
-    // 컨트롤러를 통해 카메라를 초기화합니다.
-    _initializeControllerFuture = _controller!.initialize().then((_) {
-      // 컨트롤러 초기화가 완료되면, 화면을 갱신합니다.
-      if (!mounted) return;
-      setState(() {});
-    });
-  }
-
-  @override
-  void dispose() {
-    // 위젯이 메모리에서 제거될 때, 컨트롤러를 해제합니다.
-    _controller?.dispose();
-    super.dispose();
-  }
-
+class CameraScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    // 컨트롤러 초기화를 기다립니다.
-    if (_controller == null || !_controller!.value.isInitialized) {
-      return Center(child: CircularProgressIndicator());
-    }
-
-    // 카메라 미리보기를 표시하는 위젯을 반환합니다.
     return Scaffold(
-      appBar: AppBar(title: Text('Camera Preview')),
-      // FutureBuilder를 사용하여 카메라의 초기화를 비동기적으로 기다립니다.
-      body: FutureBuilder<void>(
-        future: _initializeControllerFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
-            // 초기화가 완료되면, 카메라 미리보기를 보여줍니다.
-            return CameraPreview(_controller!);
-          } else {
-            // 그렇지 않다면, 진행 표시기를 보여줍니다.
-            return Center(child: CircularProgressIndicator());
-          }
-        },
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            // 로고 이미지
+            Image.asset('lib/assets/images/logo.jpg', height: 180, fit: BoxFit.contain),
+            Text(
+              'Match up!',
+              style: TextStyle(fontSize: 60, fontFamily: "Timmana", fontWeight: FontWeight.w300),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 60), // 텍스트와 입력 필드 사이의 여백을 늘립니다.
+            ElevatedButton(
+              child: Text('체형 측정하기'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color(0xFFBBBBEE), // 배경색
+                foregroundColor: Color(0xFF000000), 
+                padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                textStyle: TextStyle(fontSize: 17),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => BodyScanScreen()),
+                      );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
