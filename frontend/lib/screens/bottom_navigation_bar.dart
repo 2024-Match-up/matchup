@@ -101,13 +101,3 @@ class _BottomNavBarState extends State<BottomNavBar> {
   }
 }
 
-// void main() {
-//   runApp(MaterialApp(
-//     title: 'Match Up!',
-//     theme: ThemeData(
-//       primaryColor: Color(0xFFBBBBEE),
-//       scaffoldBackgroundColor: Colors.grey[300],
-//     ),
-//     home: BottomNavBar(),
-//   ));
-// }
