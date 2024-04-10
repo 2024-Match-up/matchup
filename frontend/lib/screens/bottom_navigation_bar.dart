@@ -20,7 +20,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
     // ExerciseScreen(),  // 운동 페이지
     CalendarScreen(),  // 달력 페이지
     CameraScreen(),    // 카메라 페이지
-    // RecordScreen(),    // 측정기록 페이지
+    RecordScreen(),    // 측정기록 페이지
   ];
 
   @override
