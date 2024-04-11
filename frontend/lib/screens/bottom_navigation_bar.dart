@@ -17,7 +17,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
 
   // 각 탭의 위젯을 저장할 리스트를 생성합니다.
   final List<Widget> _widgetOptions = [
-    // ExerciseScreen(),  // 운동 페이지
+    ExerciseScreen(),  // 운동 페이지
     CalendarScreen(),  // 달력 페이지
     CameraScreen(),    // 카메라 페이지
     RecordScreen(),    // 측정기록 페이지
