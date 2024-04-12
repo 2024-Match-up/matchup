@@ -6,6 +6,10 @@
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>This app requires access to the microphone for [insert reason here].</string>
+	<key>NSCameraUsageDescription</key>
+	<string>사진 촬영을 위해 카메라를 사용 하겠습니다.</string>
 	<key>CFBundleDisplayName</key>
 	<string>Matchup</string>
 	<key>CFBundleExecutable</key>

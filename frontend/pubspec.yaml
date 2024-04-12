@@ -30,6 +30,12 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  table_calendar: ^3.0.9
+  camera: ^0.10.5+9
+  path_provider: ^2.1.2
+  path: ^1.7.0
+  fl_chart: ^0.67.0
+  font_awesome_flutter: ^10.7.0
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -60,6 +66,7 @@ flutter:
   assets:
   - lib/assets/images/
   - lib/screens/
+  - lib/assets/fonts/
 
 
   # To add assets to your application, add an assets section, like this:
@@ -92,3 +99,9 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
+
+  fonts:
+    - family: Timmana
+      fonts:
+        - asset: lib/assets/fonts/Timmana-Regular.ttf
+          weight: 200
