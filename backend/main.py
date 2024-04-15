@@ -1,7 +1,7 @@
 from fastapi import FastAPI, APIRouter
 from starlette.middleware.cors import CORSMiddleware
 import models
-from database import SessionLocal, engine
+from database import engine
 from user import routes
 from logger import logger
 

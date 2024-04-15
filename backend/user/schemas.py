@@ -5,7 +5,7 @@ class Token(BaseModel):
     token_type: str
 
 class TokenData(BaseModel):
-    username: str | None = None
+    email: str | None = None
 
 class UserBase(BaseModel):
     email: str
@@ -18,5 +18,5 @@ class UserCreate(UserBase):
     pass
 
 class UserInDB(UserBase):
-    hashed_password: str
+    password: str
 
