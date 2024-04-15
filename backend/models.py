@@ -9,31 +9,43 @@ class User(Base):
     email = Column(String(20))
     nickname = Column(String(20))
     password = Column(String(20))
+    birth = Column(DateTime)
+    gender = Column(Enum("Male", "Female"))
 
-    records = relationship("Record", backref="user")
+    # sessions = relationship("Session", backref="user")
     healths = relationship("Health", backref="user")
+    # exercises = relationship("Exercise", backref="user")
 
-class Exercise(Base):
-    __tablename__ = "exercise"
+# class Calendar(Base):
+#     __tablename__ = "calendar"
 
-    id = Column(Integer, primary_key=True)
-    count = Column(Integer)
-    time = Column(Integer)
-    name = Column(String(20))
+#     id = Column(Integer, primary_key=True)
+#     date = Column(DateTime)
 
-    records = relationship("Record", backref="exercise")
+# class Exercise(Base):
+#     __tablename__ = "exercise"
 
-class Record(Base):
-    __tablename__ = "record"
+#     id = Column(Integer, primary_key=True)
+#     user_id = Column(Integer, ForeignKey("user.id"))
+#     count = Column(Integer)
+#     time = Column(Integer)
+#     name = Column(String(20))
+#     set = Column(Integer)
+#     rep = Column(Integer)
 
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("user.id"))
-    exercise_id = Column(Integer, ForeignKey("exercise.id"))
-    date = Column(DateTime)
-    week = Column(Integer)
-    set = Column(Integer)
+#     records = relationship("Session", backref="exercise")
 
-class HealthRecord(Base):
+# class Session(Base):
+#     __tablename__ = "session"
+
+#     id = Column(Integer, primary_key=True)
+#     user_id = Column(Integer, ForeignKey("user.id"))
+#     exercise_id = Column(Integer, ForeignKey("exercise.id"))
+#     date = Column(DateTime)
+#     week = Column(Integer)
+#     set = Column(Integer)
+
+class Health(Base):
     __tablename__ = "health"
 
     id = Column(Integer, primary_key=True)
@@ -45,5 +57,4 @@ class HealthRecord(Base):
     leg = Column(Integer)
     pelvis = Column(Integer)
     neck = Column(Integer)
-    gender = Column(Enum("Male", "Female"))
     birth = Column(DateTime)

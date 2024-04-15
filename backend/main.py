@@ -2,8 +2,10 @@ from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 import models
 from database import SessionLocal, engine
+import user
 
-app = FastAPI()
+app = FastAPI(prefix="/api/v1")
+app.include_router(user.routes.router)
 
 origins = [
     "http://127.0.0.1:5173",    # 또는 "http://localhost:5173"
