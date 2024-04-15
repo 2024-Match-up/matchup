@@ -1,9 +1,7 @@
 import logging
 import colorlog
 
-logger = logging.getLogger("")
-# logging.basicConfig(filename='myapp.log', level=logging.INFO)
-# logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger('passlib')
 logger.setLevel(logging.DEBUG)
 
 formatter = colorlog.ColoredFormatter(

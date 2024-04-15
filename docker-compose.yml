@@ -11,7 +11,7 @@ services:
   #   depends_on:
   #     - db
   #   environment:
-  #     - DATABASE_URL= ${DATABASE_URL}  # 사용자, 비밀번호, 데이터베이스 이름을 여기에 입력해야 합니다.
+  #     - DATABASE_URL=${DATABASE_URL}  # 사용자, 비밀번호, 데이터베이스 이름을 여기에 입력해야 합니다.
   #   networks:
   #     - app-network
 

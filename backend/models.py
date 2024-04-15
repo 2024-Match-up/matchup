@@ -6,9 +6,9 @@ class User(Base):
     __tablename__ = "user"
 
     id = Column(Integer, primary_key=True)
-    email = Column(String(20))
+    email = Column(String(30))
     nickname = Column(String(20))
-    password = Column(String(20))
+    password = Column(String(255))
     birth = Column(DateTime)
     gender = Column(Enum("Male", "Female"))
 

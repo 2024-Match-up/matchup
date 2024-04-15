@@ -6,7 +6,8 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 
 from configs import jwt_algorithm, jwt_expire_minutes, jwt_secret_key
-from .schemas import TokenData, UserBase, UserInDB, UserCreate
+from .schemas import TokenData, UserBase
+from models import User
 
 
 SECRET_KEY = jwt_secret_key
@@ -34,9 +35,9 @@ def get_user(db, email: str):
     """
     사용자 정보 데이터베이스에서 조회
     """
-    if email in db:
-        user_dict = db[email]
-        return UserInDB(**user_dict)
+    user_dict = db.query(User).filter(User.email == email).first()
+    if user_dict:
+        return user_dict
     else:
         False
 
@@ -47,7 +48,7 @@ def authenticate_user(db, email: str, password: str):
     user = get_user(db, email)
     if not user:
         return False
-    if not verify_password(password, user.hashed_password):
+    if not verify_password(password, user.password):
         return False
     return user
 
@@ -90,18 +91,20 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
 #         raise HTTPException(status_code=400, detail="Inactive user")
 #     return current_user
 
-async def create_user(db, user: UserCreate):
+def create_user(db, user: UserBase):
     """
     사용자 생성
     """
-    if user.email in db:
+    check_user = get_user(db, user.email)
+    if check_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="이미 가입된 아이디입니다.",
         )
     hashed_password = get_password_hash(user.password)
+    user.password = hashed_password
     try:
-        db_user = UserBase(email=user.email, hashed_password=hashed_password, **user.dict())
+        db_user = User(**user.dict())
         db.add(db_user)
         db.commit()
         db.refresh(db_user)

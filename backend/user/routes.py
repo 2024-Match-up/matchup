@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from datetime import datetime, timedelta, timezone
 
 from .crud import authenticate_user, create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES, get_user, create_user
-from .schemas import Token, UserCreate
+from .schemas import Token, UserBase
 from database import get_db
 
 router = APIRouter(
@@ -31,13 +31,10 @@ async def signup(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="이미 가입된 아이디입니다.",
         )
-    userForm = UserCreate(email=email, password=password, nickname=nickname, birth=birth, gender=gender)
+    userForm = UserBase(email=email, password=password, nickname=nickname, birth=birth, gender=gender)
     result = create_user(db, userForm)
     if result != True:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=result,
-        )
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,detail=result)
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
         data={"sub": email}, expires_delta=access_token_expires
@@ -62,7 +59,7 @@ async def login(
         )
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": user.email}, expires_delta=access_token_expires
+        data={"sub": email}, expires_delta=access_token_expires
     )
     return Token(access_token=access_token, token_type="bearer")
 

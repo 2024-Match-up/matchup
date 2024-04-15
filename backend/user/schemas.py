@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from datetime import datetime
 
 class Token(BaseModel):
     access_token: str
@@ -11,12 +12,6 @@ class UserBase(BaseModel):
     email: str
     nickname: str
     password: str
-    birth: str
+    birth: datetime
     gender: str
-
-class UserCreate(UserBase):
-    pass
-
-class UserInDB(UserBase):
-    password: str
-
+    
