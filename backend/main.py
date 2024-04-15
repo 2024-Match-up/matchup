@@ -1,11 +1,13 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, APIRouter
 from starlette.middleware.cors import CORSMiddleware
 import models
 from database import SessionLocal, engine
-import user
+from user import routes
+from logger import logger
 
-app = FastAPI(prefix="/api/v1")
-app.include_router(user.routes.router)
+app = FastAPI()
+router = APIRouter(prefix="/api/v1")
+app.include_router(routes.router)
 
 origins = [
     "http://127.0.0.1:5173",    # 또는 "http://localhost:5173"
@@ -18,15 +20,13 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 try:
     models.Base.metadata.create_all(bind=engine)
-    print("테이블 생성 완료")
+    logger.info("테이블 생성 완료")
 except:
-    print("이미 테이블이 생성되어 있습니다.")
+    logger.error("테이블 생성 실패")
 
 
-
-@app.get("/hello")
+@app.get("/")
 def hello():
     return {"message": "안녕하세요 파이보"}

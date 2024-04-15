@@ -21,14 +21,14 @@ services:
     ports:
       - "3306:3306"
     environment:
-      - MYSQL_ROOT_PASSWORD= ${MYSQL_ROOT_PASSWORD}  # MySQL 루트 비밀번호를 여기에 입력해야 합니다.
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}  # MySQL 루트 비밀번호를 여기에 입력해야 합니다.
       - MYSQL_DATABASE=${MYSQL_DATABASE}  # 데이터베이스 이름을 여기에 입력해야 합니다.
-      - MYSQL_USER= ${MYSQL_USER} # MySQL 사용자를 여기에 입력해야 합니다.
-      - MYSQL_PASSWORD= ${MYSQL_PASSWORD} # MySQL 사용자의 비밀번호를 여기에 입력해야 합니다.
+      - MYSQL_USER=${MYSQL_USER} # MySQL 사용자를 여기에 입력해야 합니다.
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD} # MySQL 사용자의 비밀번호를 여기에 입력해야 합니다.
     volumes:
-      - ./backend/db_data:/var/lib/mysql  # MySQL 데이터베이스를 위한 볼륨 설정
-    networks:
-      - app-network
+      - db_data:/var/lib/mysql  # MySQL 데이터베이스를 위한 볼륨 설정
+    # networks:
+    #   - app-network
       
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
@@ -39,9 +39,13 @@ services:
     environment:
       PMA_HOST: db
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-    networks:
-      - app-network
+    # networks:
+    #   - app-network
 
-networks:
-  app-network:
-    driver: bridge
+# networks:
+#   app-network:
+#     driver: bridge
+
+volumes:
+  db_data:
+
