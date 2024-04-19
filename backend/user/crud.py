@@ -5,16 +5,18 @@ from typing import Annotated
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 
-from configs import jwt_algorithm, jwt_expire_minutes, jwt_secret_key
+from configs import jwt_algorithm, jwt_expire_minutes, jwt_secret_key, jwt_refresh_days
 from .schemas import TokenData, UserBase
 from models import User
+from logger import logger
 
 
 SECRET_KEY = jwt_secret_key
 ALGORITHM = jwt_algorithm
 ACCESS_TOKEN_EXPIRE_MINUTES = jwt_expire_minutes
+REFRESH_TOKEN_EXPIRE_DAYS = jwt_refresh_days
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+# oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
@@ -60,7 +62,20 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
     else:
-        expire = datetime.now(timezone.utc) + timedelta(minutes=15)
+        expire = datetime.now(timezone.utc) + timedelta(minutes=30)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+def create_refresh_token(data: dict, expires_delta: timedelta | None = None):
+    """
+    JWT 리프레시 토큰 생성
+    """
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.now(timezone.utc) + expires_delta
+    else:
+        expire = datetime.now(timezone.utc) + timedelta(days=30)
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt

@@ -6,6 +6,7 @@ from datetime import datetime, timedelta, timezone
 
 from .crud import authenticate_user, create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES, get_user, create_user
 from .schemas import Token, UserBase
+from logger import logger
 from database import get_db
 
 router = APIRouter(

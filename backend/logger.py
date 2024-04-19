@@ -1,7 +1,7 @@
 import logging
 import colorlog
 
-logger = logging.getLogger('passlib')
+logger = logging.getLogger('')
 logger.setLevel(logging.DEBUG)
 
 formatter = colorlog.ColoredFormatter(
