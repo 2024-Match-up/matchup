@@ -29,4 +29,4 @@ except:
 
 @app.get("/")
 def hello():
-    return {"message": "안녕하세요 파이보"}
+    return {"message": "메인페이지입니다"}

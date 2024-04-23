@@ -1,10 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Form
-from fastapi.security import OAuth2PasswordRequestForm
+from fastapi import APIRouter, Depends, HTTPException, status, Form, Query
+# from fastapi.security import OAuth2PasswordRequestForm
 from typing import Annotated
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta, timezone
 
-from .crud import authenticate_user, create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES, get_user, create_user
+from .crud import authenticate_user, create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES, get_user, create_user, is_access_token_valid, is_refresh_token_valid, return_email_from_token
 from .schemas import Token, UserBase
 from logger import logger
 from database import get_db
@@ -38,7 +38,7 @@ async def signup(
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,detail=result)
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": email}, expires_delta=access_token_expires
+        data={"email": email}, expires_delta=access_token_expires
     )
     return Token(access_token=access_token, token_type="bearer")
 
@@ -60,7 +60,7 @@ async def login(
         )
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": email}, expires_delta=access_token_expires
+        data={"email": email}, expires_delta=access_token_expires
     )
     return Token(access_token=access_token, token_type="bearer")
 
@@ -72,22 +72,67 @@ async def logout():
     return {"message": "프런트에서 토큰 삭제하세요"}
 
 @router.post("/profile", summary="내 정보 입력")
-async def profile():
+async def create_profile(
+    access_token: str = Query(..., description="Access token"),
+    refresh_token: str = Query(..., description="Refresh token"),
+):    
     """
-        사용자 프로필 입력
+        사용자 프로필 생성
     """
-    return {"message": "내 정보 입력"}
+    access_token = is_access_token_valid(access_token)
+    refresh_token = is_refresh_token_valid(refresh_token)
+    if not access_token:
+        if not refresh_token:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Both tokens are expired or invalid")
+        
+        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        email = return_email_from_token(refresh_token)
+        new_access_token = create_access_token(data={"email": email}, expires_delta=access_token_expires)
+        return {"access_token": new_access_token, "profile": get_user(email)}
+    else:
+        email = return_email_from_token(access_token)
+        return {"access_token": access_token, "profile": get_user(email)}
 
 @router.get("/profile", summary="내 정보 조회")
-async def profile():
+async def get_profile(
+    access_token: str = Query(..., description="Access token"),
+    refresh_token: str = Query(..., description="Refresh token"),
+):
     """
         사용자 프로필 조회
     """
-    return {"message": "내 정보 조회"}
+    access_token = is_access_token_valid(access_token)
+    refresh_token = is_refresh_token_valid(refresh_token)
+    if not access_token:
+        if not refresh_token:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Both tokens are expired or invalid")
+        
+        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        email = return_email_from_token(refresh_token)
+        new_access_token = create_access_token(data={"email": email}, expires_delta=access_token_expires)
+        return {"access_token": new_access_token, "profile": get_user(email)}
+    else:
+        email = return_email_from_token(access_token)
+        return {"access_token": access_token, "profile": get_user(email)}
 
 @router.put("/profile", summary="내 정보 업데이트")
-async def profile():
+async def update_profile(
+    access_token: str = Query(..., description="Access token"),
+    refresh_token: str = Query(..., description="Refresh token"),
+):
     """
-        사용자 프로필 업데이트
+        사용자 프로필 수정
     """
-    return {"message": "내 정보 업데이트"}
+    access_token = is_access_token_valid(access_token)
+    refresh_token = is_refresh_token_valid(refresh_token)
+    if not access_token:
+        if not refresh_token:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Both tokens are expired or invalid")
+        
+        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        email = return_email_from_token(refresh_token)
+        new_access_token = create_access_token(data={"email": email}, expires_delta=access_token_expires)
+        return {"access_token": new_access_token, "profile": get_user(email)}
+    else:
+        email = return_email_from_token(access_token)
+        return {"access_token": access_token, "profile": get_user(email)}

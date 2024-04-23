@@ -76,37 +76,83 @@ def create_refresh_token(data: dict, expires_delta: timedelta | None = None):
         expire = datetime.now(timezone.utc) + expires_delta
     else:
         expire = datetime.now(timezone.utc) + timedelta(days=30)
-    to_encode.update({"exp": expire})
+    to_encode.update({"exp": expire, "refresh": "True"})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
-# async def get_current_user(db, token: Annotated[str, Depends(oauth2_scheme)]):
-#     credentials_exception = HTTPException(
-#         status_code=status.HTTP_401_UNAUTHORIZED,
-#         detail="Could not validate credentials",
-#         headers={"WWW-Authenticate": "Bearer"},
-#     )
-#     try:
-#         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-#         username: str = payload.get("sub")
-#         if username is None:
-#             raise credentials_exception
-#         token_data = TokenData(username=username)
-#     except JWTError:
-#         raise credentials_exception
-#     user = get_user(db, username=token_data.username)
-#     if user is None:
-#         raise credentials_exception
-#     return user
+def is_access_token_valid(token: str) -> bool:
+    """
+    엑세스 토큰 확인
+    """
+    try:
+        decoded_access_token = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        if 'access_token' in decoded_access_token:
+            expiration_time = datetime.fromtimestamp(decoded_access_token['exp'])
+            return expiration_time > datetime.now(timezone.utc)
+        else:
+            return False
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="엑세스 토큰이 만료 되었습니다",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+    except jwt.InvalidTokenError:
+        raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="엑세스 토큰이 유효하지 않습니다",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+def is_refresh_token_valid(token: str) -> bool:
+    """
+    리프레시 토큰 확인
+    """
+    try:
+        decoded_refresh_token = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        if "refresh_token" in decoded_refresh_token:
+            expiration_time = datetime.fromtimestamp(decoded_refresh_token['exp'])
+            return expiration_time > datetime.now(timezone.utc)
+        else:
+            return False
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="리프레시 토큰이 만료 되었습니다",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+    except jwt.InvalidTokenError:
+        raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="리프레시 토큰이 유효하지 않습니다",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
 
-# async def get_current_active_user(
-#     current_user: Annotated[UserBase, Depends(get_current_user)],
-# ):
-#     if current_user.disabled:
-#         raise HTTPException(status_code=400, detail="Inactive user")
-#     return current_user
+def return_email_from_token(token: str) -> str:
+    try:
+        decoded_access_token = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        if 'email' in decoded_access_token:
+            email = decoded_access_token['email']
+            return email
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="엑세스 토큰이 유효하지 되었습니다. 이메일이 확인 되지 않음",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="엑세스 토큰이 만료 되었습니다",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+    except jwt.InvalidTokenError:
+        raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="엑세스 토큰이 유효하지 않습니다",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
 
-def create_user(db, user: UserBase):
+async def create_user(db, user: UserBase):
     """
     사용자 생성
     """
@@ -128,3 +174,5 @@ def create_user(db, user: UserBase):
         return e
     return True
 
+async def create_profile(db, user: UserBase):
+    pass
