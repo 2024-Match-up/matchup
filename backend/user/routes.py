@@ -1,11 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Form, Query
-# from fastapi.security import OAuth2PasswordRequestForm
-from typing import Annotated
+from fastapi import APIRouter, Depends, HTTPException, status, Form
+from fastapi.responses import JSONResponse
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
+from fastapi_another_jwt_auth import AuthJWT
 
-from .crud import authenticate_user, create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES, get_user, create_user, is_access_token_valid, is_refresh_token_valid, return_email_from_token
-from .schemas import Token, UserBase
+from .crud import get_user, create_user, create_tokens_with_headers
+from .schemas import Token, UserBase, Settings
 from logger import logger
 from database import get_db
 
@@ -14,15 +15,20 @@ router = APIRouter(
     tags=["user"],
 )
 
-@router.post("/signup", summary="회원가입", response_model=Token)
+@AuthJWT.load_config
+def get_config():
+    return Settings()
+
+@router.post("/signup", summary="회원가입", status_code=201, response_model=None)
 async def signup(
-    email: str = Form(..., description="User email"),
-    password: str = Form(..., description="User password"),
-    nickname: str = Form(..., description="User nickname"),
-    birth: datetime = Form(..., description="User birth date"),
-    gender: str = Form(..., description="User gender"),
-    db: Session = Depends(get_db)
-) -> Token:
+                email: str = Form(..., description="User email"),
+                password: str = Form(..., description="User password"),
+                nickname: str = Form(..., description="User nickname"),
+                birth: datetime = Form(..., description="User birth date"),
+                gender: str = Form(..., description="User gender"),
+                db: Session = Depends(get_db),
+                Authorize: AuthJWT = Depends()
+                ):
     """
         회원가입
     """
@@ -36,103 +42,68 @@ async def signup(
     result = create_user(db, userForm)
     if result != True:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,detail=result)
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(
-        data={"email": email}, expires_delta=access_token_expires
-    )
-    return Token(access_token=access_token, token_type="bearer")
+    response_headers = create_tokens_with_headers(email, Authorize)
+    return JSONResponse(content={"message": "유저 생성 및 로그인 성공"}, headers=response_headers)
 
-@router.post("/login", summary="로그인", response_model=Token)
+@router.post("/login", summary="로그인", status_code=200, response_model=None)
 async def login(
     email: str = Form(..., description="User email"),
     password: str = Form(..., description="User password"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    Authorize: AuthJWT = Depends()
 ) -> Token:
     """
         로그인
     """
-    user = authenticate_user(db, email, password)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="비밀번호나 아이디가 틀렸습니다.",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(
-        data={"email": email}, expires_delta=access_token_expires
-    )
-    return Token(access_token=access_token, token_type="bearer")
+    # user = authenticate_user(db, email, password)
+    # if not user:
+    #     raise HTTPException(
+    #         status_code=status.HTTP_401_UNAUTHORIZED,
+    #         detail="비밀번호나 아이디가 틀렸습니다.",
+    #         headers={"WWW-Authenticate": "Bearer"},
+    #     )
+    response_headers = create_tokens_with_headers(email, Authorize)
+    logger.info(f"엑세스 토큰 기간 {Authorize._access_token_expires}")
+    # logger.info(dir(Authorize.get_raw_jwt()))
+    return JSONResponse(content={"message": "로그인 성공"}, headers=response_headers)
 
 @router.post("/logout", summary="로그아웃")
-async def logout():
+async def logout(
+    Authorize: AuthJWT = Depends(),
+):
     """
         로그아웃
     """
+    logger.info(Authorize.get_jwt_subject())
+    logger.info(f"엑세스 토큰 정보: {Authorize.get_raw_jwt()}")
+    Authorize.jwt_required()
+    Authorize.refresh
     return {"message": "프런트에서 토큰 삭제하세요"}
 
 @router.post("/profile", summary="내 정보 입력")
 async def create_profile(
-    access_token: str = Query(..., description="Access token"),
-    refresh_token: str = Query(..., description="Refresh token"),
-):    
+    Authorize: AuthJWT = Depends()
+):
     """
         사용자 프로필 생성
     """
-    access_token = is_access_token_valid(access_token)
-    refresh_token = is_refresh_token_valid(refresh_token)
-    if not access_token:
-        if not refresh_token:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Both tokens are expired or invalid")
-        
-        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-        email = return_email_from_token(refresh_token)
-        new_access_token = create_access_token(data={"email": email}, expires_delta=access_token_expires)
-        return {"access_token": new_access_token, "profile": get_user(email)}
-    else:
-        email = return_email_from_token(access_token)
-        return {"access_token": access_token, "profile": get_user(email)}
+    logger.info(dir(Authorize))
+    # return {"access_token": access_token, "profile": get_user(Authorize.get_jwt_subject())}
 
 @router.get("/profile", summary="내 정보 조회")
 async def get_profile(
-    access_token: str = Query(..., description="Access token"),
-    refresh_token: str = Query(..., description="Refresh token"),
+    Authorize: AuthJWT = Depends(),
 ):
     """
         사용자 프로필 조회
     """
-    access_token = is_access_token_valid(access_token)
-    refresh_token = is_refresh_token_valid(refresh_token)
-    if not access_token:
-        if not refresh_token:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Both tokens are expired or invalid")
-        
-        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-        email = return_email_from_token(refresh_token)
-        new_access_token = create_access_token(data={"email": email}, expires_delta=access_token_expires)
-        return {"access_token": new_access_token, "profile": get_user(email)}
-    else:
-        email = return_email_from_token(access_token)
-        return {"access_token": access_token, "profile": get_user(email)}
+    # return {"access_token": access_token, "profile": get_user(Authorize.get_jwt_subject())}
 
 @router.put("/profile", summary="내 정보 업데이트")
 async def update_profile(
-    access_token: str = Query(..., description="Access token"),
-    refresh_token: str = Query(..., description="Refresh token"),
+    Authorize: AuthJWT = Depends(),
 ):
     """
         사용자 프로필 수정
     """
-    access_token = is_access_token_valid(access_token)
-    refresh_token = is_refresh_token_valid(refresh_token)
-    if not access_token:
-        if not refresh_token:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Both tokens are expired or invalid")
-        
-        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-        email = return_email_from_token(refresh_token)
-        new_access_token = create_access_token(data={"email": email}, expires_delta=access_token_expires)
-        return {"access_token": new_access_token, "profile": get_user(email)}
-    else:
-        email = return_email_from_token(access_token)
-        return {"access_token": access_token, "profile": get_user(email)}
+    # return {"access_token": access_token, "profile": get_user(Authorize.get_jwt_subject())}

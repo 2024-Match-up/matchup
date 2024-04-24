@@ -1,5 +1,8 @@
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, Request
+from fastapi.responses import JSONResponse
 from starlette.middleware.cors import CORSMiddleware
+from fastapi_another_jwt_auth.exceptions import AuthJWTException
+
 import models
 from database import engine
 from user import routes
@@ -26,6 +29,12 @@ try:
 except:
     logger.error("테이블 생성 실패")
 
+@app.exception_handler(AuthJWTException)
+def authjwt_exception_handler(request: Request, exc: AuthJWTException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.message}
+    )
 
 @app.get("/")
 def hello():

@@ -1,24 +1,14 @@
 from passlib.context import CryptContext
-from datetime import datetime, timedelta, timezone
 from fastapi import Depends, HTTPException, status
-from typing import Annotated
-from fastapi.security import OAuth2PasswordBearer
-from jose import JWTError, jwt
+from .routes import AuthJWT
 
-from configs import jwt_algorithm, jwt_expire_minutes, jwt_secret_key, jwt_refresh_days
-from .schemas import TokenData, UserBase
+from .schemas import UserBase
 from models import User
 from logger import logger
+from datetime import timedelta
+from configs import JWT_ACCESS_EXPIRE_MINUTES
 
-
-SECRET_KEY = jwt_secret_key
-ALGORITHM = jwt_algorithm
-ACCESS_TOKEN_EXPIRE_MINUTES = jwt_expire_minutes
-REFRESH_TOKEN_EXPIRE_DAYS = jwt_refresh_days
-
-# oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
 
 def verify_password(plain_password, hashed_password):
     """
@@ -54,103 +44,46 @@ def authenticate_user(db, email: str, password: str):
         return False
     return user
 
-def create_access_token(data: dict, expires_delta: timedelta | None = None):
-    """
-    JWT 엑세스 토큰 생성
-    """
-    to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
-    else:
-        expire = datetime.now(timezone.utc) + timedelta(minutes=30)
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
+def authenticate_tokens(Authorize: AuthJWT = Depends()) -> str:
+    access_token = Authorize.get_jwt()
+    refresh_token = Authorize.get_raw_jwt(refresh=True)
 
-def create_refresh_token(data: dict, expires_delta: timedelta | None = None):
-    """
-    JWT 리프레시 토큰 생성
-    """
-    to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
-    else:
-        expire = datetime.now(timezone.utc) + timedelta(days=30)
-    to_encode.update({"exp": expire, "refresh": "True"})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
+    if not access_token:
+        if not refresh_token:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Both access token and refresh token are missing or invalid", headers={"WWW-Authenticate": "Bearer"})
+        if not Authorize.check_refresh_token():
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Refresh token is invalid", headers={"WWW-Authenticate": "Bearer"})
 
-def is_access_token_valid(token: str) -> bool:
-    """
-    엑세스 토큰 확인
-    """
-    try:
-        decoded_access_token = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        if 'access_token' in decoded_access_token:
-            expiration_time = datetime.fromtimestamp(decoded_access_token['exp'])
-            return expiration_time > datetime.now(timezone.utc)
-        else:
-            return False
-    except jwt.ExpiredSignatureError:
-        raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="엑세스 토큰이 만료 되었습니다",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
-    except jwt.InvalidTokenError:
-        raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="엑세스 토큰이 유효하지 않습니다",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
-def is_refresh_token_valid(token: str) -> bool:
-    """
-    리프레시 토큰 확인
-    """
-    try:
-        decoded_refresh_token = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        if "refresh_token" in decoded_refresh_token:
-            expiration_time = datetime.fromtimestamp(decoded_refresh_token['exp'])
-            return expiration_time > datetime.now(timezone.utc)
-        else:
-            return False
-    except jwt.ExpiredSignatureError:
-        raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="리프레시 토큰이 만료 되었습니다",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
-    except jwt.InvalidTokenError:
-        raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="리프레시 토큰이 유효하지 않습니다",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
+        email = Authorize.get_jwt_subject(refresh_token)
+        new_access_token = Authorize.create_access_token(subject=email)
 
-def return_email_from_token(token: str) -> str:
-    try:
-        decoded_access_token = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        if 'email' in decoded_access_token:
-            email = decoded_access_token['email']
-            return email
-        else:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="엑세스 토큰이 유효하지 되었습니다. 이메일이 확인 되지 않음",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
-    except jwt.ExpiredSignatureError:
-        raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="엑세스 토큰이 만료 되었습니다",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
-    except jwt.InvalidTokenError:
-        raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="엑세스 토큰이 유효하지 않습니다",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
+        return new_access_token
+
+    if not Authorize.check_jwt():
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Access token is invalid", headers={"WWW-Authenticate": "Bearer"})
+
+    return access_token
+
+def create_tokens_with_headers(email: str, Authorize: AuthJWT = Depends()) -> dict:
+    """
+    로그인/회원가입 토큰 생성
+    """
+    access_token = create_access_token(email, Authorize)
+    refresh_token = create_refresh_token(email, Authorize)
+    return {"Authorization": f"Bearer {access_token}", "Refresh_Token": refresh_token}
+
+def create_access_token(email: str, Authorize: AuthJWT = Depends()):
+    """
+    엑세스 토큰 생성
+    """
+    Authorize._access_token_expires = timedelta(minutes=JWT_ACCESS_EXPIRE_MINUTES)
+    return Authorize.create_access_token(subject=email)
+
+def create_refresh_token(email: str, Authorize: AuthJWT = Depends()):
+    """
+    리프레시 토큰 생성
+    """
+    return Authorize.create_refresh_token(subject=email)
 
 async def create_user(db, user: UserBase):
     """
