@@ -9,6 +9,8 @@ alembic.ini
 logs
 .deta
 db_data
+backend/venv
+.vscode
 
 
 

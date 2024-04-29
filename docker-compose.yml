@@ -2,18 +2,18 @@ version: '3.8'
 
 services:
   # FastAPI 백엔드 애플리케이션
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    ports:
-      - "8000:8000"
-    depends_on:
-      - db
-    environment:
-      - DATABASE_URL= ${DATABASE_URL}  # 사용자, 비밀번호, 데이터베이스 이름을 여기에 입력해야 합니다.
-    networks:
-      - app-network
+  # backend:
+  #   build:
+  #     context: ./backend
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "8000:8000"
+  #   depends_on:
+  #     - db
+  #   environment:
+  #     - DATABASE_URL=${DATABASE_URL}  # 사용자, 비밀번호, 데이터베이스 이름을 여기에 입력해야 합니다.
+  #   networks:
+  #     - app-network
 
   # MySQL 데이터베이스
   db:
@@ -21,15 +21,31 @@ services:
     ports:
       - "3306:3306"
     environment:
-      - MYSQL_ROOT_PASSWORD= ${MYSQL_ROOT_PASSWORD}  # MySQL 루트 비밀번호를 여기에 입력해야 합니다.
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}  # MySQL 루트 비밀번호를 여기에 입력해야 합니다.
       - MYSQL_DATABASE=${MYSQL_DATABASE}  # 데이터베이스 이름을 여기에 입력해야 합니다.
-      - MYSQL_USER= ${MYSQL_USER} # MySQL 사용자를 여기에 입력해야 합니다.
-      - MYSQL_PASSWORD= ${MYSQL_PASSWORD} # MySQL 사용자의 비밀번호를 여기에 입력해야 합니다.
+      - MYSQL_USER=${MYSQL_USER} # MySQL 사용자를 여기에 입력해야 합니다.
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD} # MySQL 사용자의 비밀번호를 여기에 입력해야 합니다.
     volumes:
-      - ./backend/db_data:/var/lib/mysql  # MySQL 데이터베이스를 위한 볼륨 설정
+      - db_data:/var/lib/mysql  # MySQL 데이터베이스를 위한 볼륨 설정
+    networks:
+      - app-network
+  # 디비 조회용 GUI    
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    links:
+      - db:mysql
+    ports:
+      - "8080:80"
+    environment:
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     networks:
       - app-network
 
 networks:
   app-network:
     driver: bridge
+
+volumes:
+  db_data:
+
