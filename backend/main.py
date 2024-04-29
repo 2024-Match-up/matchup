@@ -23,6 +23,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 try:
     models.Base.metadata.create_all(bind=engine)
     logger.info("테이블 생성 완료")
@@ -33,7 +34,7 @@ except:
 def authjwt_exception_handler(request: Request, exc: AuthJWTException):
     return JSONResponse(
         status_code=exc.status_code,
-        content={"detail": exc.message}
+        content={"메시지": exc.message}
     )
 
 @app.get("/")
