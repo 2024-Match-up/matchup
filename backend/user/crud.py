@@ -44,33 +44,31 @@ def authenticate_user(db, email: str, password: str):
         return False
     return user
 
-def authenticate_tokens(Authorize: AuthJWT = Depends()) -> str:
-    access_token = Authorize.get_jwt()
-    refresh_token = Authorize.get_raw_jwt(refresh=True)
+def authenticate_access_token(Authorize: AuthJWT = Depends()) -> str:
+    """
+    엑세스 토큰 인증 및 유저 이메일 반환
+    """
+    Authorize.jwt_required()
+    email = Authorize.get_jwt_subject()
+    logger.info(f"유저 이메일: {email} 엑세스 토큰 확인 완료")
+    return email
 
-    if not access_token:
-        if not refresh_token:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Both access token and refresh token are missing or invalid", headers={"WWW-Authenticate": "Bearer"})
-        if not Authorize.check_refresh_token():
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Refresh token is invalid", headers={"WWW-Authenticate": "Bearer"})
+def authenticate_refresh_token(Authorize: AuthJWT = Depends()) -> str:
+    """
+    리프레시 토큰 인증 및 엑세스 토큰 반환
+    """
+    Authorize.jwt_refresh_token_required()
+    email = Authorize.get_jwt_subject()
+    logger.info(f"유저 이메일: {email} 리프레시 토큰 확인 완료")
+    return create_access_token(email, Authorize)
 
-        email = Authorize.get_jwt_subject(refresh_token)
-        new_access_token = Authorize.create_access_token(subject=email)
-
-        return new_access_token
-
-    if not Authorize.check_jwt():
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Access token is invalid", headers={"WWW-Authenticate": "Bearer"})
-
-    return access_token
-
-def create_tokens_with_headers(email: str, Authorize: AuthJWT = Depends()) -> dict:
+def create_tokens_in_body(email: str, Authorize: AuthJWT = Depends()) -> dict:
     """
     로그인/회원가입 토큰 생성
     """
     access_token = create_access_token(email, Authorize)
     refresh_token = create_refresh_token(email, Authorize)
-    return {"Authorization": f"Bearer {access_token}", "Refresh_Token": refresh_token}
+    return {"access_token" : access_token, "refresh_token" : refresh_token}
 
 def create_access_token(email: str, Authorize: AuthJWT = Depends()):
     """

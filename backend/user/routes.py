@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 from fastapi_another_jwt_auth import AuthJWT
 
-from .crud import get_user, create_user, create_tokens_with_headers
+from .crud import get_user, create_user, create_tokens_in_body, authenticate_access_token, authenticate_refresh_token, authenticate_user
 from .schemas import Token, UserBase, Settings
 from logger import logger
 from database import get_db
@@ -18,6 +18,14 @@ router = APIRouter(
 @AuthJWT.load_config
 def get_config():
     return Settings()
+
+@router.post("/token", summary="새로운 엑세스 토큰 반환", status_code=200, response_model=Token)
+async def get_token(Authorize: AuthJWT = Depends()):
+    """
+        새로운 엑세스 토큰 반환
+    """
+    token = authenticate_refresh_token(Authorize)
+    return JSONResponse({"access_token": token})
 
 @router.post("/signup", summary="회원가입", status_code=201, response_model=None)
 async def signup(
@@ -42,8 +50,9 @@ async def signup(
     result = create_user(db, userForm)
     if result != True:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,detail=result)
-    response_headers = create_tokens_with_headers(email, Authorize)
-    return JSONResponse(content={"message": "유저 생성 및 로그인 성공"}, headers=response_headers)
+    response_body = create_tokens_in_body(email, Authorize)
+    response_body["message"] = "유저 생성 및 로그인 성공"
+    return JSONResponse(content=response_body, status_code=201)
 
 @router.post("/login", summary="로그인", status_code=200, response_model=None)
 async def login(
@@ -62,10 +71,9 @@ async def login(
     #         detail="비밀번호나 아이디가 틀렸습니다.",
     #         headers={"WWW-Authenticate": "Bearer"},
     #     )
-    response_headers = create_tokens_with_headers(email, Authorize)
+    response_headers = create_tokens_in_body(email, Authorize)
     logger.info(f"엑세스 토큰 기간 {Authorize._access_token_expires}")
-    # logger.info(dir(Authorize.get_raw_jwt()))
-    return JSONResponse(content={"message": "로그인 성공"}, headers=response_headers)
+    return JSONResponse(status_code=200, content=response_headers)
 
 @router.post("/logout", summary="로그아웃")
 async def logout(
@@ -74,10 +82,7 @@ async def logout(
     """
         로그아웃
     """
-    logger.info(Authorize.get_jwt_subject())
-    logger.info(f"엑세스 토큰 정보: {Authorize.get_raw_jwt()}")
-    Authorize.jwt_required()
-    Authorize.refresh
+    email = authenticate_access_token(Authorize=Authorize)
     return {"message": "프런트에서 토큰 삭제하세요"}
 
 @router.post("/profile", summary="내 정보 입력")
@@ -87,8 +92,8 @@ async def create_profile(
     """
         사용자 프로필 생성
     """
-    logger.info(dir(Authorize))
-    # return {"access_token": access_token, "profile": get_user(Authorize.get_jwt_subject())}
+    email = authenticate_access_token(Authorize=Authorize)
+    return {"message": "프로필 생성 완료", "email": email}
 
 @router.get("/profile", summary="내 정보 조회")
 async def get_profile(
