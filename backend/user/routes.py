@@ -64,13 +64,13 @@ async def login(
     """
         로그인
     """
-    # user = authenticate_user(db, email, password)
-    # if not user:
-    #     raise HTTPException(
-    #         status_code=status.HTTP_401_UNAUTHORIZED,
-    #         detail="비밀번호나 아이디가 틀렸습니다.",
-    #         headers={"WWW-Authenticate": "Bearer"},
-    #     )
+    user = authenticate_user(db, email, password)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="비밀번호나 아이디가 틀렸습니다.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     response_headers = create_tokens_in_body(email, Authorize)
     logger.info(f"엑세스 토큰 기간 {Authorize._access_token_expires}")
     return JSONResponse(status_code=200, content=response_headers)
