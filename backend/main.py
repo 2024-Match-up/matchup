@@ -5,13 +5,15 @@ from fastapi_another_jwt_auth.exceptions import AuthJWTException
 
 import models
 from database import engine
-from user import routes
+from user import routes as user_routes
+from exercise import routes as exercise_routes
 from logger import logger
 import sys
 
 app = FastAPI()
 router = APIRouter(prefix="/api/v1")
-app.include_router(routes.router)
+app.include_router(user_routes.router)
+app.include_router(exercise_routes.router)
 
 origins = [
     "http://127.0.0.1:5173",    # 또는 "http://localhost:5173"

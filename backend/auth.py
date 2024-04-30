@@ -1,10 +1,7 @@
 from pydantic import BaseModel
-from datetime import datetime, timedelta
+from datetime import timedelta
+from fastapi_another_jwt_auth import AuthJWT
 from configs import JWT_ALGORITHM, JWT_SECRET_KET, JWT_ACCESS_EXPIRE_MINUTES, JWT_REFRESH_EXPIRE_DAYS
-
-class Token(BaseModel):
-    access_token: str
-    refresh_token: str
 
 class Settings(BaseModel):
     authjwt_secret_key: str = JWT_SECRET_KET
@@ -16,19 +13,6 @@ class Settings(BaseModel):
     authjwt_algorithm: str = JWT_ALGORITHM
     authjwt_decode_algorithms: list = [JWT_ALGORITHM]
 
-class UserBase(BaseModel):
-    email: str
-    nickname: str
-    password: str
-    birth: datetime
-    gender: str
-
-class HealthBase(BaseModel):
-    user_id: int
-    height: int
-    weight: int
-    waist: int
-    leg: int
-    pelvis: int
-    neck: int
-    need: int
+@AuthJWT.load_config
+def get_config():
+    return Settings()
