@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, String, Float, DateTime, Enum, ForeignKey
 from sqlalchemy.orm import relationship
+from datetime import datetime, UTC
 from database import Base
 
 class User(Base):
@@ -11,16 +12,12 @@ class User(Base):
     password = Column(String(255))
     birth = Column(DateTime)
     gender = Column(Enum("Male", "Female"))
+    created = Column(DateTime, default=datetime.now(UTC))
+    updated = Column(DateTime, default=datetime.now(UTC), onupdate=datetime.now(UTC))
 
     # sessions = relationship("Session", backref="user")
     healths = relationship("Health", backref="user")
     # exercises = relationship("Exercise", backref="user")
-
-# class Calendar(Base):
-#     __tablename__ = "calendar"
-
-#     id = Column(Integer, primary_key=True)
-#     date = Column(DateTime)
 
 # class Exercise(Base):
 #     __tablename__ = "exercise"
@@ -50,11 +47,11 @@ class Health(Base):
 
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("user.id"))
-    bmi = Column(Integer)
     height = Column(Integer)
     weight = Column(Integer)
     waist = Column(Integer)
     leg = Column(Integer)
     pelvis = Column(Integer)
     neck = Column(Integer)
-    birth = Column(DateTime)
+    date_added = Column(DateTime, default=datetime.now(UTC), onupdate=datetime.now(UTC))
+    need = Column(Integer)

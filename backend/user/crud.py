@@ -2,8 +2,8 @@ from passlib.context import CryptContext
 from fastapi import Depends, HTTPException, status
 from .routes import AuthJWT
 
-from .schemas import UserBase
-from models import User
+from .schemas import UserBase, HealthBase
+from models import User, Health
 from logger import logger
 from datetime import timedelta
 from configs import JWT_ACCESS_EXPIRE_MINUTES
@@ -44,7 +44,7 @@ def authenticate_user(db, email: str, password: str):
         return False
     return user
 
-def authenticate_access_token(Authorize: AuthJWT = Depends()) -> str:
+def authenticate_access_token(Authorize: AuthJWT) -> str:
     """
     엑세스 토큰 인증 및 유저 이메일 반환
     """
@@ -83,7 +83,7 @@ def create_refresh_token(email: str, Authorize: AuthJWT = Depends()):
     """
     return Authorize.create_refresh_token(subject=email)
 
-async def create_user(db, user: UserBase):
+def create_user(db, user: UserBase):
     """
     사용자 생성
     """
@@ -96,7 +96,7 @@ async def create_user(db, user: UserBase):
     hashed_password = get_password_hash(user.password)
     user.password = hashed_password
     try:
-        db_user = User(**user.dict())
+        db_user = User(**user.model_dump())
         db.add(db_user)
         db.commit()
         db.refresh(db_user)
@@ -105,5 +105,42 @@ async def create_user(db, user: UserBase):
         return e
     return True
 
-async def create_profile(db, user: UserBase):
-    pass
+def create_health(db, health: HealthBase):
+    """
+    프로필 생성
+    """
+    try:
+        user_health = Health(**health.model_dump())
+        db.add(user_health)
+        db.commit()
+        db.refresh(user_health)
+    except Exception as e:
+        db.rollback()
+        return e
+    return True
+
+def get_health(db, email: str):
+    """
+    프로필 조회
+    """
+    health_data = db.query(Health).join(User).filter(User.email == email).first()
+    if health_data:
+        return health_data
+    else:
+        return False
+
+def update_health(db, email: str, health: dict):
+    """
+    프로필 수정
+    """
+    health_data = db.query(Health).join(User).filter(User.email == email).first()
+    if not health_data:
+        return False
+    health_dict = health_data.__dict__
+    logger.info(health_dict)
+    for k, v in health.items():
+        if health_dict[k] != v:
+            logger.info(f"프로필 수정: key: {k}, value: {health_dict[k]} -> {v}")
+            setattr(health_data, k, v)
+    db.commit()
+    return True
