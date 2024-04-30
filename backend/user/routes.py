@@ -84,7 +84,7 @@ async def login(
 async def logout(
                 Authorize: AuthJWT = Depends(),
                 ):
-    """
+    """ 
         로그아웃
     """
     email = authenticate_access_token(Authorize=Authorize)
