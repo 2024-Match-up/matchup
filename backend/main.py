@@ -7,6 +7,7 @@ import models
 from database import engine
 from user import routes
 from logger import logger
+import sys
 
 app = FastAPI()
 router = APIRouter(prefix="/api/v1")
@@ -27,8 +28,10 @@ app.add_middleware(
 try:
     models.Base.metadata.create_all(bind=engine)
     logger.info("테이블 생성 완료")
-except:
+except Exception as e:
     logger.error("테이블 생성 실패")
+    logger.info(e)
+    sys.exit(1)
 
 @app.exception_handler(AuthJWTException)
 def authjwt_exception_handler(request: Request, exc: AuthJWTException):
