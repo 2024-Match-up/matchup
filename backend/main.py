@@ -33,7 +33,7 @@ try:
 except Exception as e:
     logger.error("테이블 생성 실패")
     logger.info(e)
-    sys.exit(1)
+    # sys.exit(1)
 
 @app.exception_handler(AuthJWTException)
 def authjwt_exception_handler(request: Request, exc: AuthJWTException):

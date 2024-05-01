@@ -1,33 +1,40 @@
 html = """
 <!DOCTYPE html>
-<html>
-    <head>
-        <title>Chat</title>
-    </head>
-    <body>
-        <h1>WebSocket Chat</h1>
-        <form action="" onsubmit="sendMessage(event)">
-            <input type="text" id="messageText" autocomplete="off"/>
-            <button>Send</button>
-        </form>
-        <ul id='messages'>
-        </ul>
-        <script>
-            var ws = new WebSocket("ws://localhost:8000/api/v1/exercise/ws");
-            ws.onmessage = function(event) {
-                var messages = document.getElementById('messages')
-                var message = document.createElement('li')
-                var content = document.createTextNode(event.data)
-                message.appendChild(content)
-                messages.appendChild(message)
-            };
-            function sendMessage(event) {
-                var input = document.getElementById("messageText")
-                ws.send(input.value)
-                input.value = ''
-                event.preventDefault()
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Person Detection Test</title>
+</head>
+<body>
+    <h1>Person Detection Results:</h1>
+    <div id="detectionResult"></div>
+    <img id="streamedImage" src="#" alt="Streamed Image" width="640" height="480">
+    <button onclick="toggleConnection()">Toggle Connection</button>
+
+    <script>
+        let socket;
+        let isConnected = false;
+
+        function toggleConnection() {
+            if (isConnected) {
+                socket.close();
+                isConnected = false;
+            } else {
+                socket = new WebSocket('ws://localhost:8000/api/v1/exercise/ws'); // Change the URL accordingly
+                socket.onopen = () => {
+                    console.log('WebSocket connection established.');
+                    isConnected = true;
+                };
+
+                socket.onmessage = (event) => {
+                    const imageData = event.data;
+                    const streamedImageElement = document.getElementById('streamedImage');
+                    streamedImageElement.src = "data:image/jpeg;base64," + imageData;
+                };
             }
-        </script>
-    </body>
+        }
+    </script>
+</body>
 </html>
 """
