@@ -4,36 +4,51 @@ html = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Person Detection Test</title>
+    <title>Image and Text WebSocket Example</title>
+    <style>
+        #result img {
+            width: 640px;
+            height: 480px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Person Detection Results:</h1>
-    <div id="detectionResult"></div>
-    <img id="streamedImage" src="#" alt="Streamed Image" width="640" height="480">
-    <button onclick="toggleConnection()">Toggle Connection</button>
+    <h1>Image and Text WebSocket Example</h1>
+    <div id="result"></div>
+    <button id="toggleButton">Toggle WebSocket Connection</button>
 
     <script>
         let socket;
-        let isConnected = false;
 
-        function toggleConnection() {
-            if (isConnected) {
+        document.getElementById('toggleButton').addEventListener('click', () => {
+            if (socket && socket.readyState === WebSocket.OPEN) {
                 socket.close();
-                isConnected = false;
+                console.log('WebSocket connection closed.');
             } else {
-                socket = new WebSocket('ws://localhost:8000/api/v1/exercise/ws'); // Change the URL accordingly
+                socket = new WebSocket('ws://localhost:8000/api/v1/exercise/ws');
                 socket.onopen = () => {
                     console.log('WebSocket connection established.');
-                    isConnected = true;
                 };
-
                 socket.onmessage = (event) => {
-                    const imageData = event.data;
-                    const streamedImageElement = document.getElementById('streamedImage');
-                    streamedImageElement.src = "data:image/jpeg;base64," + imageData;
+                    const data = JSON.parse(event.data);
+                    const imageSrc = data.frame;
+                    const textMessage = data.message;
+
+                    // Replace the existing content of the result div
+                    document.getElementById('result').innerHTML = '';
+
+                    // Display the image
+                    const imageElement = document.createElement('img');
+                    imageElement.src = 'data:image/jpeg;base64,' + imageSrc;
+                    document.getElementById('result').appendChild(imageElement);
+
+                    // Display the text message
+                    const textElement = document.createElement('p');
+                    textElement.textContent = textMessage;
+                    document.getElementById('result').appendChild(textElement);
                 };
             }
-        }
+        });
     </script>
 </body>
 </html>

@@ -4,6 +4,7 @@ import numpy as np
 from logger import logger
 import cv2
 import base64
+import json
 import mediapipe as mp
 from mediapipe.python.solutions import pose as mp_pose
 from mediapipe.python.solutions import drawing_utils as mp_drawing
@@ -11,34 +12,36 @@ from mediapipe.python.solutions import drawing_styles as mp_drawing_styles
 
 
 mp_pose = mp.solutions.pose
-pose = mp_pose.Pose()
-
-def detect_angle(frame):
-    frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    results = pose.process(frame_rgb)
-    
-    if results.pose_landmarks:
-        mp_drawing.draw_landmarks(
-            image=frame,
-            landmark_list=results.pose_landmarks,
-            connections=mp_pose.POSE_CONNECTIONS,
-            landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style()
-        )
-        
-    return frame
-
 
 async def send_detection_results(websocket: WebSocket):
-    camera = cv2.VideoCapture(0)
-    while True:
-        ret, frame = camera.read()
-        if not ret:
-            break
-        
-        processed_frame = detect_angle(frame) 
-        ret, buffer = cv2.imencode('.jpg', processed_frame)
-        frame_bytes = buffer.tobytes()
-        frame_base64 = base64.b64encode(frame_bytes).decode('utf-8')
-        await websocket.send_text(frame_base64)
-        await asyncio.sleep(5)
-    camera.release()
+    cap = cv2.VideoCapture(0)
+    with mp_pose.Pose(
+            min_detection_confidence=0.5,
+            min_tracking_confidence=0.5,
+            model_complexity=1) as pose:
+        i = 0
+        while cap.isOpened():
+            i += 1
+            success, image = cap.read()
+            if not success:
+                logger.info("카메라를 찾을 수 없습니다.")
+                continue
+            image.flags.writeable = False
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            results = pose.process(image)
+
+            image.flags.writeable = True
+            image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+            mp_drawing.draw_landmarks(
+                image,
+                results.pose_landmarks,
+                mp_pose.POSE_CONNECTIONS,
+                landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style())
+            img = cv2.flip(image, 1)
+            _, buffer = cv2.imencode('.jpg', img)
+            frame_bytes = buffer.tobytes()
+            frame_base64 = base64.b64encode(frame_bytes).decode('utf-8')
+            message = json.dumps({'frame': frame_base64, 'message': f"counter: {i}"})
+            await websocket.send_text(message)
+            await asyncio.sleep(0.1)
+    cap.release()
