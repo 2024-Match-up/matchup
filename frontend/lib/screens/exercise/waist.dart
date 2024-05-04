@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'exercise_camera.dart';
 
 class WaistStretchScreen extends StatelessWidget {
   @override
@@ -43,8 +44,12 @@ class WaistStretchScreen extends StatelessWidget {
             ),
             SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () {
-              },
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ExerciseCameraScreen()), 
+              );
+            },
               child: Text('운동하기 가기'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Color(0xFFBBBBEE), // 배경색
