@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'neck.dart'; 
+import 'hip.dart';
+import 'waist.dart';
+import 'leg.dart';
 
 class ExerciseScreen extends StatelessWidget {
   @override
@@ -12,6 +16,12 @@ class ExerciseScreen extends StatelessWidget {
           calories: '-500kcal',
           sets: '4 sets',
           reps: '8-10 reps',
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => NeckStretchScreen()),
+            );
+          },
         ),
         ExerciseCard(
           title: '골반 스트레칭',
@@ -19,6 +29,12 @@ class ExerciseScreen extends StatelessWidget {
           calories: '-500kcal',
           sets: '4 sets',
           reps: '8-10 reps',
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => HipStretchScreen()),
+            );
+          },
         ),
         ExerciseCard(
           title: '다리 스트레칭',
@@ -26,6 +42,12 @@ class ExerciseScreen extends StatelessWidget {
           calories: '-500kcal',
           sets: '4 sets',
           reps: '8-10 reps',
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => LegStretchScreen()),
+            );
+          },
         ),
         ExerciseCard(
           title: '허리 스트레칭',
@@ -33,6 +55,12 @@ class ExerciseScreen extends StatelessWidget {
           calories: '-500kcal',
           sets: '4 sets',
           reps: '8-10 reps',
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => WaistStretchScreen()),
+            );
+          },
         ),
       ],
     );
@@ -45,6 +73,7 @@ class ExerciseCard extends StatelessWidget {
   final String calories;
   final String sets;
   final String reps;
+  final VoidCallback? onTap; 
 
   const ExerciseCard({
     Key? key,
@@ -53,52 +82,55 @@ class ExerciseCard extends StatelessWidget {
     required this.calories,
     required this.sets,
     required this.reps,
+    this.onTap,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     var screenWidth = MediaQuery.of(context).size.width;
 
-    return Card(
-      margin: EdgeInsets.all(screenWidth * 0.015), 
-      child: Padding(
-        padding: EdgeInsets.all(screenWidth * 0.03), 
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: <Widget>[
-            SizedBox(width: screenWidth * 0.01), 
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: screenWidth * 0.035, 
-                      fontWeight: FontWeight.bold,
+    return GestureDetector(
+      onTap: onTap,
+      child: Card(
+        margin: EdgeInsets.all(screenWidth * 0.015),
+        child: Padding(
+          padding: EdgeInsets.all(screenWidth * 0.03),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.035,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                  SizedBox(height: screenWidth * 0.03), 
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Text(duration),
-                      Text(sets),
-                    ],
-                  ),
-                  SizedBox(height: screenWidth * 0.03), 
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Text(calories),
-                      Text(reps),
-                    ],
-                  ),
-                ],
+                    SizedBox(height: screenWidth * 0.03),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Text(duration),
+                        Text(sets),
+                      ],
+                    ),
+                    SizedBox(height: screenWidth * 0.03),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Text(calories),
+                        Text(reps),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
