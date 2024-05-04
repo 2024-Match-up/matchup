@@ -20,9 +20,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }
 
   List<String> _fetchExercisesForDay(DateTime day) {
-    // Temporary hardcoded data for exercises
-    // TODO: Replace with actual data fetching from backend when available
-    return ['풀업', '딥스', '스쿼트']; // Example list of exercises
+    return ['풀업', '딥스', '스쿼트']; 
   }
 
   @override
@@ -34,11 +32,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
       body: Column(
         children: <Widget>[
           Card(
-            margin: EdgeInsets.all(screenWidth * 0.02), // Responsive margin
+            margin: EdgeInsets.all(screenWidth * 0.02), 
             child: TableCalendar(
               headerStyle: HeaderStyle(
-                formatButtonVisible: false, // This hides the format button
-                titleCentered: true, // This will center the header title if desired
+                formatButtonVisible: false, 
+                titleCentered: true, 
               ),
               locale: 'ko_KR',
               focusedDay: _focusedDay,
@@ -58,7 +56,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
           ),
           Expanded(
             child: Card(
-              margin: EdgeInsets.all(screenWidth * 0.02), // Responsive margin
+              margin: EdgeInsets.all(screenWidth * 0.02), 
               child: ListView.builder(
                 itemCount: _selectedDayExercises.length,
                 itemBuilder: (context, index) {

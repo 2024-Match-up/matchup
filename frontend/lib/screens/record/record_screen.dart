@@ -22,14 +22,14 @@ class RecordScreen extends StatelessWidget {
             foregroundColor: Colors.black,
           ),
         ),
-        SizedBox(height: screenHeight * 0.03), // Responsive spacing
+        SizedBox(height: screenHeight * 0.03), 
         Container(
-          height: screenHeight * 0.20, // 20% of total screen height
-          width: screenWidth * 0.90, // 90% of total screen width
+          height: screenHeight * 0.20,
+          width: screenWidth * 0.90, 
           alignment: Alignment.center,
           child: PelvicTiltChart(),
         ),
-        SizedBox(height: screenHeight * 0.03), // Responsive spacing
+        SizedBox(height: screenHeight * 0.03), 
       ],
     );
   }

@@ -54,7 +54,7 @@ void showSignUpModal(BuildContext context) {
                       child: Text('중복 확인'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Color(0xFFBBBBEE), 
-                        foregroundColor: Colors.white, // Button text color remains white for contrast
+                        foregroundColor: Colors.white, 
                         minimumSize: Size(0, 36),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10.0),
