@@ -3,6 +3,9 @@ import 'package:fl_chart/fl_chart.dart';
 
 class RecordScreen extends StatelessWidget {
   Widget buildSection(BuildContext context, String title) {
+    var screenWidth = MediaQuery.of(context).size.width;
+    var screenHeight = MediaQuery.of(context).size.height;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -19,14 +22,14 @@ class RecordScreen extends StatelessWidget {
             foregroundColor: Colors.black,
           ),
         ),
-        SizedBox(height: 20),
+        SizedBox(height: screenHeight * 0.03), // Responsive spacing
         Container(
-          height: 150,
-          width: 350,
+          height: screenHeight * 0.20, // 20% of total screen height
+          width: screenWidth * 0.90, // 90% of total screen width
           alignment: Alignment.center,
           child: PelvicTiltChart(),
         ),
-        SizedBox(height: 20), // 각 섹션 사이의 간격
+        SizedBox(height: screenHeight * 0.03), // Responsive spacing
       ],
     );
   }
@@ -35,7 +38,7 @@ class RecordScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.04),
         child: ListView(
           children: <Widget>[
             buildSection(context, '골반'),
