@@ -25,7 +25,7 @@ class CameraAppState extends State<BodyScanScreen> {
   void initState() {
     super.initState();
     _initializeControllerFuture = initializeCamera();
-    _timer = Timer(Duration.zero, () {}); // Initialize _timer with a dummy Timer
+    _timer = Timer(Duration.zero, () {}); 
   }
 
 
@@ -140,16 +140,16 @@ class CameraAppState extends State<BodyScanScreen> {
                       onPressed: _photoCount < 2 ? startCountdown : null,
                       style: ElevatedButton.styleFrom(
                         shape: CircleBorder(),
-                        padding: EdgeInsets.all(20), // Increase icon size
-                        backgroundColor: Colors.transparent, // Remove button background color
-                        foregroundColor: Colors.black, // Set button text color
+                        padding: EdgeInsets.all(20), 
+                        backgroundColor: Colors.transparent,
+                        foregroundColor: Colors.black, 
                       ),
                       child: Icon(
                         Icons.photo_camera,
-                        size: 36, // Increase icon size
+                        size: 36, 
                       ),
                     ),
-                    SizedBox(height: 10), // Add space between icon and text
+                    SizedBox(height: 10), 
                     Text.rich(
                       _photoCount == 0
                           ? TextSpan(
