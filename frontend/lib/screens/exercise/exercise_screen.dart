@@ -12,7 +12,6 @@ class ExerciseScreen extends StatelessWidget {
           calories: '-500kcal',
           sets: '4 sets',
           reps: '8-10 reps',
-          icon: FontAwesomeIcons.personWalking,
         ),
         ExerciseCard(
           title: '골반 스트레칭',
@@ -20,7 +19,6 @@ class ExerciseScreen extends StatelessWidget {
           calories: '-500kcal',
           sets: '4 sets',
           reps: '8-10 reps',
-          icon: Icons.directions_run,
         ),
         ExerciseCard(
           title: '다리 스트레칭',
@@ -28,7 +26,6 @@ class ExerciseScreen extends StatelessWidget {
           calories: '-500kcal',
           sets: '4 sets',
           reps: '8-10 reps',
-          icon: Icons.directions_run,
         ),
         ExerciseCard(
           title: '허리 스트레칭',
@@ -36,7 +33,6 @@ class ExerciseScreen extends StatelessWidget {
           calories: '-500kcal',
           sets: '4 sets',
           reps: '8-10 reps',
-          icon: Icons.directions_run,
         ),
       ],
     );
@@ -49,7 +45,6 @@ class ExerciseCard extends StatelessWidget {
   final String calories;
   final String sets;
   final String reps;
-  final IconData icon;
 
   const ExerciseCard({
     Key? key,
@@ -58,21 +53,21 @@ class ExerciseCard extends StatelessWidget {
     required this.calories,
     required this.sets,
     required this.reps,
-    required this.icon,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    var screenWidth = MediaQuery.of(context).size.width;
+
     return Card(
-      margin: EdgeInsets.all(8.0),
+      margin: EdgeInsets.all(screenWidth * 0.015), 
       child: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: EdgeInsets.all(screenWidth * 0.03), 
         child: Row(
           mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.center, 
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
-            Icon(icon, size: 50), // Display the icon
-            SizedBox(width: 24), // Add space between the icon and the text
+            SizedBox(width: screenWidth * 0.01), 
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -80,11 +75,11 @@ class ExerciseCard extends StatelessWidget {
                   Text(
                     title,
                     style: TextStyle(
-                      fontSize: 20,
+                      fontSize: screenWidth * 0.035, 
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(height: 8),
+                  SizedBox(height: screenWidth * 0.03), 
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
@@ -92,7 +87,7 @@ class ExerciseCard extends StatelessWidget {
                       Text(sets),
                     ],
                   ),
-                  SizedBox(height: 4),
+                  SizedBox(height: screenWidth * 0.03), 
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
