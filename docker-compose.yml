@@ -12,7 +12,7 @@ services:
       - db
     restart: always
     environment:
-      - SQLALCHEMY_DATABASE_URL=${DATABASE_URL}  # 사용자, 비밀번호, 데이터베이스 이름
+      - SQLALCHEMY_DATABASE_URL=${SQLALCHEMY_DATABASE_URL}  # 사용자, 비밀번호, 데이터베이스 이름
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}  # JWT 시크릿키
       - JWT_ALGORITHM=${JWT_ALGORITHM}  # JWT 알고리즘을
       - JWT_ACCESS_TOKEN_EXPIRE_MINUTES=${JWT_ACCESS_TOKEN_EXPIRE_MINUTES}  # 액세스 토큰 만료 시간
