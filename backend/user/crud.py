@@ -1,6 +1,6 @@
 from passlib.context import CryptContext
 from fastapi import Depends, HTTPException, status
-from .routes import AuthJWT
+from fastapi_another_jwt_auth import AuthJWT
 
 from .schemas import UserBase, HealthBase
 from models import User, Health
@@ -53,7 +53,7 @@ def authenticate_access_token(Authorize: AuthJWT) -> str:
     logger.info(f"유저 이메일: {email} 엑세스 토큰 확인 완료")
     return email
 
-def authenticate_refresh_token(Authorize: AuthJWT = Depends()) -> str:
+def authenticate_refresh_token(Authorize: AuthJWT) -> str:
     """
     리프레시 토큰 인증 및 엑세스 토큰 반환
     """
@@ -62,7 +62,7 @@ def authenticate_refresh_token(Authorize: AuthJWT = Depends()) -> str:
     logger.info(f"유저 이메일: {email} 리프레시 토큰 확인 완료")
     return create_access_token(email, Authorize)
 
-def create_tokens_in_body(email: str, Authorize: AuthJWT = Depends()) -> dict:
+def create_tokens_in_body(email: str, Authorize: AuthJWT) -> dict:
     """
     로그인/회원가입 토큰 생성
     """
@@ -70,14 +70,14 @@ def create_tokens_in_body(email: str, Authorize: AuthJWT = Depends()) -> dict:
     refresh_token = create_refresh_token(email, Authorize)
     return {"access_token" : access_token, "refresh_token" : refresh_token}
 
-def create_access_token(email: str, Authorize: AuthJWT = Depends()):
+def create_access_token(email: str, Authorize: AuthJWT):
     """
     엑세스 토큰 생성
     """
     Authorize._access_token_expires = timedelta(minutes=JWT_ACCESS_EXPIRE_MINUTES)
     return Authorize.create_access_token(subject=email)
 
-def create_refresh_token(email: str, Authorize: AuthJWT = Depends()):
+def create_refresh_token(email: str, Authorize: AuthJWT):
     """
     리프레시 토큰 생성
     """

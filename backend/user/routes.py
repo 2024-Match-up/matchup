@@ -3,23 +3,17 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from fastapi.security import HTTPBearer
 from datetime import datetime
-from fastapi_another_jwt_auth import AuthJWT
 
 from .crud import get_user, create_user, create_tokens_in_body, authenticate_access_token, authenticate_refresh_token, authenticate_user, create_health, get_health, update_health
 from .schemas import Token, UserBase, Settings, HealthBase
 from logger import logger
 from database import get_db
+from auth import AuthJWT
 
 router = APIRouter(
     prefix="/api/v1/user",
     tags=["user"],
 )
-
-@AuthJWT.load_config
-def get_config():
-    return Settings()
-
-http_bearer = HTTPBearer()
 
 @router.post("/token", summary="새로운 엑세스 토큰 반환", status_code=200, response_model=Token)
 async def get_token(Authorize: AuthJWT = Depends()):
