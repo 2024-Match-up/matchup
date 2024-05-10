@@ -2,7 +2,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class ApiClient {
-  final String baseUrl = 'http://192.168.0.11:8000/api/v1/user';
+  final String baseUrl = 'http://172.30.1.100:8000/api/v1/user';
 
   // 회원가입
   Future<void> signup(String email, String password, String nickname, DateTime birth, String gender) async {
@@ -38,16 +38,20 @@ class ApiClient {
   }
 
   // 프로필 정보 입력
-  Future<void> createProfile(Map<String, dynamic> profileData, String accessToken) async {
+  Future<void> createProfile(String nickname, int height, int weight, String accessToken) async {
     var response = await http.post(
       Uri.parse('$baseUrl/profile'),
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
         'Authorization': 'Bearer $accessToken'
       },
-      body: profileData,
+      body: {
+        'nickname': nickname,
+        'height': height.toString(),
+        'weight': weight.toString()
+      },
     );
-    if (response.statusCode != 200) {
+    if (response.statusCode != 201) {
       throw Exception('Failed to create profile: ${response.body}');
     }
   }
@@ -56,7 +60,9 @@ class ApiClient {
   Future<Map<String, dynamic>> getProfile(String accessToken) async {
     var response = await http.get(
       Uri.parse('$baseUrl/profile'),
-      headers: {'Authorization': 'Bearer $accessToken'},
+      headers: {
+        'Authorization': 'Bearer $accessToken'
+      },
     );
     if (response.statusCode == 200) {
       return json.decode(response.body);
@@ -66,14 +72,18 @@ class ApiClient {
   }
 
   // 프로필 정보 업데이트
-  Future<void> updateProfile(Map<String, dynamic> profileData, String accessToken) async {
+  Future<void> updateProfile(String nickname, int height, int weight, String accessToken) async {
     var response = await http.put(
       Uri.parse('$baseUrl/profile'),
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
         'Authorization': 'Bearer $accessToken'
       },
-      body: profileData,
+      body: {
+        'nickname': nickname,
+        'height': height.toString(),
+        'weight': weight.toString()
+      },
     );
     if (response.statusCode != 200) {
       throw Exception('Failed to update profile: ${response.body}');
