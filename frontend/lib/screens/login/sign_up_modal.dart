@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '/services/api_client.dart'; // API 클라이언트를 불러오는 경로를 확인하세요.
+import '/services/api_client.dart'; 
 
 void showSignUpModal(BuildContext context) {
   var screenWidth = MediaQuery.of(context).size.width;

@@ -12,11 +12,13 @@ class User(Base):
     password = Column(String(255))
     birth = Column(DateTime)
     gender = Column(Enum("Male", "Female"))
+    height = Column(Integer, default=0)
+    weight = Column(Integer, default=0)
     created = Column(DateTime, default=datetime.now(timezone.utc))
     updated = Column(DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
 
-    # sessions = relationship("Session", backref="user")
     healths = relationship("Health", backref="user")
+    # sessions = relationship("Session", backref="user")
     # exercises = relationship("Exercise", backref="user")
 
 # class Exercise(Base):
@@ -47,8 +49,6 @@ class Health(Base):
 
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("user.id"))
-    height = Column(Integer)
-    weight = Column(Integer)
     waist = Column(Integer)
     leg = Column(Integer)
     pelvis = Column(Integer)
