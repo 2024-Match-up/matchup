@@ -3,15 +3,27 @@ from fastapi.responses import JSONResponse
 from starlette.middleware.cors import CORSMiddleware
 from fastapi_another_jwt_auth.exceptions import AuthJWTException
 
+import os 
 import models
 from database import engine
 from user import routes
 from logger import logger
 import sys
+import boto3
+import dotenv
+
+dotenv.load_dotenv()
 
 app = FastAPI()
 router = APIRouter(prefix="/api/v1")
 app.include_router(routes.router)
+
+# S3 연결 준비
+client_s3 = boto3.client(
+    's3',
+    aws_access_key_id=os.getenv("CREDENTIALS_ACCESS_KEY"),
+    aws_secret_access_key=os.getenv("CREDENTIALS_SECRET_KEY")
+)
 
 origins = [
     "http://127.0.0.1:5173",    # 또는 "http://localhost:5173"
