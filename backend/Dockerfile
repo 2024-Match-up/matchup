@@ -11,6 +11,9 @@ WORKDIR /backend
 RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt
 
+RUN apt-get update && apt-get install libgl1-mesa-glx -y
+
+
 # 컨테이너를 실행할 때 사용될 명령 설정 (예시로 gunicorn을 사용하여 FastAPI 서버 실행)
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
 

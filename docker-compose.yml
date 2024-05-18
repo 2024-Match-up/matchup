@@ -10,6 +10,8 @@ services:
       - "8000:8000"
     depends_on:
       - db
+    env_file:
+      - .env
     restart: always
     environment:
       - SQLALCHEMY_DATABASE_URL=${SQLALCHEMY_DATABASE_URL}  # 사용자, 비밀번호, 데이터베이스 이름
@@ -48,16 +50,16 @@ services:
       - app-network
   
   # 젠킨스
-  jenkins:
-    image: jenkins/jenkins:latest
-    container_name: jenkins
-    ports:
-      - "8080:8080"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - jenkins_home:/var/jenkins_home
-    networks:
-      - app-network
+  # jenkins:
+  #   image: jenkins/jenkins:latest
+  #   container_name: jenkins
+  #   ports:
+  #     - "8080:8080"
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock
+  #     - jenkins_home:/var/jenkins_home
+  #   networks:
+  #     - app-network
 
 networks:
   app-network:
@@ -65,5 +67,5 @@ networks:
 
 volumes:
   db_data:
-  jenkins_home:
+  # jenkins_home:
 

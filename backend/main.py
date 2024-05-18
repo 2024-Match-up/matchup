@@ -6,23 +6,31 @@ from fastapi_another_jwt_auth.exceptions import AuthJWTException
 import os 
 import models
 from database import engine
-from user import routes
 from logger import logger
 import sys
-import boto3
 import dotenv
+import boto3
+
+
+from user import routes as user_routes
+from exercise import routes as exercise_routes
+from health import routes as health_routes
+
 
 dotenv.load_dotenv()
 
 app = FastAPI()
 router = APIRouter(prefix="/api/v1")
-app.include_router(routes.router)
+app.include_router(health_routes.router)
+app.include_router(user_routes.router)
+# app.include_router(exercise_routes.router)
 
-# S3 연결 준비
+
 client_s3 = boto3.client(
     's3',
     aws_access_key_id=os.getenv("CREDENTIALS_ACCESS_KEY"),
-    aws_secret_access_key=os.getenv("CREDENTIALS_SECRET_KEY")
+    aws_secret_access_key=os.getenv("CREDENTIALS_SECRET_KEY"),
+    region_name=os.getenv("CREDENTIALS_AWS_REGION") 
 )
 
 origins = [
@@ -55,3 +63,13 @@ def authjwt_exception_handler(request: Request, exc: AuthJWTException):
 @app.get("/")
 def hello():
     return {"message": "메인페이지입니다"}
+
+@app.get("/test-s3")
+async def test_s3_connection():
+    try:
+        response = client_s3.list_buckets()
+        buckets = [bucket['Name'] for bucket in response['Buckets']]
+        return {"buckets": buckets}
+    except Exception as e:
+        logger.error(f"Failed to connect to S3: {e}")
+        raise HTTPException(status_code=500, detail="Failed to connect to S3")
