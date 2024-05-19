@@ -1,6 +1,5 @@
 from pydantic import BaseModel
 from datetime import datetime, timedelta
-from typing import ForwardRef
 from configs import JWT_ALGORITHM, JWT_SECRET_KET, JWT_ACCESS_EXPIRE_MINUTES, JWT_REFRESH_EXPIRE_DAYS
 
 class Token(BaseModel):
@@ -26,10 +25,13 @@ class UserBase(BaseModel):
 
 class HealthBase(BaseModel):
     user_id: int
-    height: int
-    weight: int
     waist: int
     leg: int
     pelvis: int
     neck: int
     need: int
+    
+class UserProfileUpdate(BaseModel):
+    nickname: str
+    height: int
+    weight: int
