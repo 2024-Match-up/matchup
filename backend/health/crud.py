@@ -10,7 +10,7 @@ import numpy as np
 import cv2
 
 def create_health_entry_in_db(db: Session, health: schemas.HealthCreate):
-    user_health = db.query(Health).filter(Health.user_id == health.user_id).first()
+    user_health = db.query(Health).filter(Health.user_id == health.user_id).order_by(Health.createdAt.desc()).first()
     if user_health is None:
         raise HTTPException(status_code=400, detail="User not found")
     
