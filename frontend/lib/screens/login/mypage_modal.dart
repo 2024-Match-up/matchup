@@ -73,6 +73,7 @@ import '/services/api_client.dart';
 
 final ApiClient apiClient = ApiClient();
 
+
 void showMyPageModal(BuildContext context, String accessToken) {
   var screenWidth = MediaQuery.of(context).size.width;
   var screenHeight = MediaQuery.of(context).size.height;
@@ -200,3 +201,4 @@ void showMyPageModal(BuildContext context, String accessToken) {
     );
   });
 }
+

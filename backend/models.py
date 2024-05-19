@@ -49,9 +49,13 @@ class Health(Base):
 
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("user.id"))
-    waist = Column(Integer)
-    leg = Column(Integer)
-    pelvis = Column(Integer)
-    neck = Column(Integer)
-    date_added = Column(DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
-    need = Column(Integer)
+    waist = Column(Integer, default=0)
+    leg = Column(Integer, default=0)
+    pelvis = Column(Integer, default=0)
+    neck = Column(Integer, default=0)
+    need = Column(Integer, default=0)
+    side_url = Column(String(500), index=True, default="url")
+    front_url = Column(String(500), index=True, default="url")
+    createdAt = Column(DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
+
+

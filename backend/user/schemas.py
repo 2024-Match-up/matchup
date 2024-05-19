@@ -36,4 +36,3 @@ class UserProfileUpdate(BaseModel):
     height: int
     weight: int
 
-

@@ -2,8 +2,8 @@ from passlib.context import CryptContext
 from fastapi import Depends, HTTPException, status
 from fastapi_another_jwt_auth import AuthJWT
 
-from .schemas import UserSignup, HealthBase, UserProfileUpdate, UserBase
-from models import User, Health
+from .schemas import UserProfileUpdate, UserBase
+from models import User
 from logger import logger
 from datetime import timedelta
 from configs import JWT_ACCESS_EXPIRE_MINUTES

@@ -2,12 +2,13 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class ApiClient {
-  final String baseUrl = 'http://172.30.1.100:8000/api/v1/user';
+  final String baseUrl = 'http://172.30.1.87:8000/api/v1';
+
 
   // 회원가입
   Future<void> signup(String email, String password, String nickname, DateTime birth, String gender) async {
     var response = await http.post(
-      Uri.parse('$baseUrl/signup'),
+      Uri.parse('$baseUrl/user/signup'),
       headers: {'Content-Type': 'application/x-www-form-urlencoded'},
       body: {
         'email': email,
@@ -25,7 +26,7 @@ class ApiClient {
   // 로그인
   Future<String> login(String email, String password) async {
     var response = await http.post(
-      Uri.parse('$baseUrl/login'),
+      Uri.parse('$baseUrl/user/login'),
       headers: {'Content-Type': 'application/x-www-form-urlencoded'},
       body: {'email': email, 'password': password},
     );
@@ -40,7 +41,7 @@ class ApiClient {
   // 프로필 정보 입력
   Future<void> createProfile(String nickname, int height, int weight, String accessToken) async {
     var response = await http.post(
-      Uri.parse('$baseUrl/profile'),
+      Uri.parse('$baseUrl/user/profile'),
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
         'Authorization': 'Bearer $accessToken'
@@ -59,7 +60,7 @@ class ApiClient {
   // 프로필 정보 조회
   Future<Map<String, dynamic>> getProfile(String accessToken) async {
     var response = await http.get(
-      Uri.parse('$baseUrl/profile'),
+      Uri.parse('$baseUrl/user/profile'),
       headers: {
         'Authorization': 'Bearer $accessToken'
       },
@@ -74,7 +75,7 @@ class ApiClient {
   // 프로필 정보 업데이트
   Future<void> updateProfile(String nickname, int height, int weight, String accessToken) async {
     var response = await http.put(
-      Uri.parse('$baseUrl/profile'),
+      Uri.parse('$baseUrl/user/profile'),
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
         'Authorization': 'Bearer $accessToken'
@@ -93,7 +94,7 @@ class ApiClient {
   // 새로운 엑세스 토큰 반환
   Future<String> refreshToken(String refreshToken) async {
     var response = await http.post(
-      Uri.parse('$baseUrl/token'),
+      Uri.parse('$baseUrl/user/token'),
       headers: {'Authorization': 'Bearer $refreshToken'},
     );
     if (response.statusCode == 200) {

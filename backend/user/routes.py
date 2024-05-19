@@ -5,7 +5,7 @@ from fastapi.security import HTTPBearer
 from datetime import datetime
 
 from .crud import get_user, create_user, create_tokens_in_body, authenticate_access_token, authenticate_refresh_token, authenticate_user, update_user_profile
-from .schemas import Token, Settings, HealthBase, UserProfileUpdate, UserBase
+from .schemas import Token,UserProfileUpdate, UserBase
 from logger import logger
 from database import get_db
 from auth import AuthJWT

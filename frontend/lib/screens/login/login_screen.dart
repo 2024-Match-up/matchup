@@ -114,6 +114,9 @@ import 'package:flutter/material.dart';
 import '../bottom_navigation_bar.dart';
 import 'sign_up_modal.dart';
 import '/services/api_client.dart';
+import 'package:matchup/models/UserProvider.dart';
+import 'package:provider/provider.dart';
+
 
 class LoginScreen extends StatelessWidget {
   final TextEditingController _emailController = TextEditingController();
@@ -180,8 +183,10 @@ class LoginScreen extends StatelessWidget {
                       _emailController.text,
                       _passwordController.text,
                     );
+                    
                     // 로그로 액세스 토큰 출력
                     print('로그인 성공! 액세스 토큰: $accessToken');
+                    Provider.of<UserProvider>(context, listen: false).login(accessToken);
                     
                     // 인증 성공 후 하단 탭 바 페이지로 이동하고 토큰을 전달
                     Navigator.pushReplacement(
@@ -206,7 +211,6 @@ class LoginScreen extends StatelessWidget {
                 ),
               ),
               SizedBox(height: screenHeight * 0.025),
-
               // 이메일 회원가입 버튼
               OutlinedButton(
                 child: Text(
