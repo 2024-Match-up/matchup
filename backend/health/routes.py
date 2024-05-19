@@ -11,11 +11,15 @@ from botocore.exceptions import NoCredentialsError
 from database import get_db
 import boto3
 import dotenv
-from health import crud, schemas
+from health import crud, schemas,front,side
+
 from database import get_db, get_current_user
 import logging
 
-from health.crud import create_health_entry_in_db
+from health.crud import (create_health_entry_in_db,
+                        submit_health_data,
+                        restore_health_data,
+                        download_image_from_s3)
 from health.schemas import HealthBase, HealthCreate, HealthInDBBase
 import models
 
@@ -70,19 +74,6 @@ async def upload_file_to_s3(file: UploadFile, S3_BUCKET_NAME: str) -> str:
         logging.error(f"Error occurred: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
     
-# @router.post("/upload/", response_model=schemas.Health)
-# async def create_upload_file(file: UploadFile = File(...), db: Session = Depends(get_db)):
-#     try:
-#         image_url = await upload_file_to_s3(file, S3_BUCKET_NAME)
-#         health_data = schemas.HealthCreate(
-#             image_url=image_url,
-#             createdAt=datetime.utcnow()
-#         )
-#         created_health = crud.create_health_entry_in_db(db=db, health=health_data)
-#         return created_health
-#     except Exception as e:
-#         logging.error(f"Error occurred during file upload or DB insertion: {str(e)}")
-#         return JSONResponse(status_code=500, content={"message": "Upload failed", "details": str(e)})
 
 @router.post("/upload/", response_model=schemas.Health)
 async def create_upload_file(
@@ -109,11 +100,66 @@ async def create_upload_file(
         logging.info(f"Validating health data: {health_data}")
         
         logging.info("Inserting health data into the database")
-        created_health = crud.create_health_entry_in_db(db=db, health=health_data)
+        return_data = crud.create_health_entry_in_db(db=db, health=health_data)
+
+        created_health = return_data[0]
+        is_front = return_data[1]
+        
+        score_dict = {}
+        ##########################
+        
+        image = download_image_from_s3(image_url)
+        
+        if image is None:
+            raise HTTPException(status_code=500, detail="Error occurred during image download")
+        
+        ## 파일 저장
+        image_base_path = 'backend/images'
+        
+        if not os.path.exists(image_base_path):
+            os.makedirs(image_base_path)
+        
+        ## True인 경우, front
+        if is_front:
+            logging.info("Processing front image")
+            file_path = f"{image_base_path}/front.png"
+            cv2.imwrite(file_path, image)
+            score_dict = front.process_image(file_path)
+        ## False인 경우, side
+        else:
+            logging.info("Processing side image")
+            file_path = f"{image_base_path}/side.png"
+            cv2.imwrite(file_path, image)
+            score_dict = side.analyze_neck_angle(file_path)
+            
+        print(score_dict)
+        ## None인 경우, 에러 발생
+        if score_dict is None:
+            raise HTTPException(status_code=500, detail="Error occurred during image processing")
+        ## score_dict에 값이 있는 경우, 각 부위의 점수를 저장
+        else:
+            for key, value in score_dict.items():
+                submit_health_data(db=db, user_id=current_user.id, part=key, score=value)
+        ##########################
         logging.info(f"Health data inserted with ID {created_health.id}")
+
         
         return created_health
     except Exception as e:
         logging.error("Error occurred during file upload or DB insertion")
         logging.error(traceback.format_exc())
         return JSONResponse(status_code=500, content={"message": "Upload failed", "details": str(e)})
+    
+@router.get("/restore/")
+def restore_health_data_route(db: Session = Depends(get_db), access_token: str = Depends(get_auth_header)):
+    """
+    모든 사용자의 건강 데이터를 초기화하는 함수
+    """
+    
+    current_user = get_current_user(token = access_token, db =db)
+    
+    if restore_health_data(db=db, user_id=current_user.id):
+        return JSONResponse(status_code=200, content={"message": "Health data restored"})
+    else:
+        return JSONResponse(status_code=500, content={"message": "Error occurred during health data restoration"})
+    
