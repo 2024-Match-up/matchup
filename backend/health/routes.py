@@ -96,7 +96,7 @@ async def create_upload_file(
         health_data = schemas.HealthCreate(
             user_id=current_user.id,
             image_url=image_url,
-            createdAt=datetime.utcnow()
+            createdAt=datetime.now(timezone.utc)
         )
 
         logging.info(f"건강 데이터 유효성 검사: {health_data}")
@@ -148,6 +148,37 @@ async def create_upload_file(
         logging.error(traceback.format_exc())
         return JSONResponse(status_code=500, content={"message": "업로드 실패", "details": str(e)})
 
+# @router.get("/image", response_model=schemas.HealthURLs)
+# async def get_user_images(
+#     db: Session = Depends(get_db),
+#     user_id: int = None,
+#     access_token: str = Depends(get_auth_header)
+# ):
+#     try:
+#         current_user = get_current_user(token=access_token, db=db)
+#         logging.info(f"인증된 사용자: {current_user.email}")
+
+#         if user_id is None:
+#             user_id = current_user.id
+
+#         logging.info(f"사용자 ID {user_id}의 이미지 가져오는 중")
+#         health_entry = crud.get_user_images(db=db, user_id=user_id)
+
+#         if not health_entry:
+#             logging.info(f"사용자 ID {user_id}에 대한 이미지가 없습니다.")
+#             raise HTTPException(status_code=404, detail="해당 사용자 ID에 대한 이미지가 없습니다.")
+
+#         logging.info(f"사용자 ID {user_id}에 대한 이미지 찾음")
+        
+#         return [ {"user_id" : health_entry , "front_url" : health_entry.front_url, "side_url": health_entry.side_url} for x in health_entry]
+        
+        
+#     except Exception as e:
+#         logging.error("사용자 이미지 가져오는 중 오류 발생")
+#         logging.error(traceback.format_exc())
+#         return JSONResponse(status_code=500, content={"message": "Upload failed", "details": str(e)})
+
+
 @router.get("/image", response_model=schemas.HealthURLs)
 async def get_user_images(
     db: Session = Depends(get_db),
@@ -156,30 +187,39 @@ async def get_user_images(
 ):
     try:
         current_user = get_current_user(token=access_token, db=db)
-        logging.info(f"인증된 사용자: {current_user.email}")
+        logging.info(f"Authenticated user: {current_user.email}")
 
         if user_id is None:
             user_id = current_user.id
 
-        logging.info(f"사용자 ID {user_id}의 이미지 가져오는 중")
-        health_entry = crud.get_user_images(db=db, user_id=user_id)
+        logging.info(f"Fetching images for user ID {user_id}")
+        health_entries = crud.get_user_images(db=db, user_id=user_id)
 
-        if not health_entry:
-            logging.info(f"사용자 ID {user_id}에 대한 이미지가 없습니다.")
-            raise HTTPException(status_code=404, detail="해당 사용자 ID에 대한 이미지가 없습니다.")
+        if not health_entries:
+            logging.info(f"No images found for user ID {user_id}.")
+            raise HTTPException(status_code=404, detail="No images found for this user.")
 
-        logging.info(f"사용자 ID {user_id}에 대한 이미지 찾음")
-        
+        logging.info(f"Images found for user ID {user_id}")
+
         return {
-            "user_id": health_entry.user_id,
-            "front_url": health_entry.front_url,
-            "side_url": health_entry.side_url
+            "user_id": user_id,
+            "images": [
+                {
+                    "front_url": entry.front_url,
+                    "side_url": entry.side_url,
+                    "createdAt": entry.createdAt
+                }
+                for entry in health_entries
+                if entry.front_url and entry.side_url  # Ensure both URLs are present
+            ]
         }
-        
     except Exception as e:
-        logging.error("사용자 이미지 가져오는 중 오류 발생")
-        logging.error(traceback.format_exc())
-        return JSONResponse(status_code=500, content={"message": "Upload failed", "details": str(e)})
+        logging.error("Error fetching user images")
+        logging.error(e)
+        raise HTTPException(status_code=500, detail="Error fetching user images")
+
+
+
 
 @router.get("/graph/", response_model=List[schemas.HealthLimited])
 async def get_health_data(
