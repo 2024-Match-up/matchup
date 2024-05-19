@@ -30,3 +30,8 @@ class Health(HealthInDBBase):
 
 class HealthInDB(HealthInDBBase):
     pass
+
+class HealthURLs(BaseModel):
+    user_id : int
+    front_url: str
+    side_url: str

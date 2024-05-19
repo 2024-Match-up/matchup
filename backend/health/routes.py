@@ -23,6 +23,7 @@ from fastapi.security import OAuth2PasswordBearer,HTTPBearer, HTTPAuthorizationC
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 security = HTTPBearer()
+
 # 의존성 함수 정의
 def get_auth_header(auth: HTTPAuthorizationCredentials = Depends(security)):
     return auth.credentials
@@ -64,25 +65,11 @@ async def upload_file_to_s3(file: UploadFile, S3_BUCKET_NAME: str) -> str:
         url = f"https://{S3_BUCKET_NAME}.s3-{location}.amazonaws.com/{file_name}"
         return url
     except NoCredentialsError:
-        logging.error("AWS credentials not available")
-        raise HTTPException(status_code=500, detail="AWS credentials not available")
+        logging.error("AWS 자격 증명이 제공되지 않았습니다.")
+        raise HTTPException(status_code=500, detail="AWS 자격 증명이 제공되지 않았습니다.")
     except Exception as e:
-        logging.error(f"Error occurred: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-    
-# @router.post("/upload/", response_model=schemas.Health)
-# async def create_upload_file(file: UploadFile = File(...), db: Session = Depends(get_db)):
-#     try:
-#         image_url = await upload_file_to_s3(file, S3_BUCKET_NAME)
-#         health_data = schemas.HealthCreate(
-#             image_url=image_url,
-#             createdAt=datetime.utcnow()
-#         )
-#         created_health = crud.create_health_entry_in_db(db=db, health=health_data)
-#         return created_health
-#     except Exception as e:
-#         logging.error(f"Error occurred during file upload or DB insertion: {str(e)}")
-#         return JSONResponse(status_code=500, content={"message": "Upload failed", "details": str(e)})
+        logging.error(f"오류 발생: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"오류 발생: {str(e)}")
 
 @router.post("/upload/", response_model=schemas.Health)
 async def create_upload_file(
@@ -91,29 +78,61 @@ async def create_upload_file(
     access_token: str = Depends(get_auth_header)
 ):  
     try:
-        
-        current_user = get_current_user(token = access_token, db =db)
-        logging.info(f"Authenticated user: {current_user.email}")
+        current_user = get_current_user(token=access_token, db=db)
+        logging.info(f"인증된 사용자: {current_user.email}")
 
-        logging.info("Starting file upload to S3")
+        logging.info("S3에 파일 업로드 시작")
         image_url = await upload_file_to_s3(file, S3_BUCKET_NAME)
-        logging.info(f"File uploaded to S3 at {image_url}")
+        logging.info(f"S3에 파일 업로드 완료: {image_url}")
 
-        logging.info("Creating health data entry")
+        logging.info("건강 데이터 항목 생성 중")
         health_data = schemas.HealthCreate(
             user_id=current_user.id,
             image_url=image_url,
             createdAt=datetime.utcnow()
         )
 
-        logging.info(f"Validating health data: {health_data}")
+        logging.info(f"건강 데이터 유효성 검사: {health_data}")
         
-        logging.info("Inserting health data into the database")
+        logging.info("데이터베이스에 건강 데이터 삽입 중")
         created_health = crud.create_health_entry_in_db(db=db, health=health_data)
-        logging.info(f"Health data inserted with ID {created_health.id}")
+        logging.info(f"건강 데이터 삽입 완료, ID: {created_health.id}")
         
         return created_health
     except Exception as e:
-        logging.error("Error occurred during file upload or DB insertion")
+        logging.error("파일 업로드 또는 데이터베이스 삽입 중 오류 발생")
         logging.error(traceback.format_exc())
-        return JSONResponse(status_code=500, content={"message": "Upload failed", "details": str(e)})
+        return JSONResponse(status_code=500, content={"message": "업로드 실패", "details": str(e)})
+
+@router.get("/image", response_model=schemas.HealthURLs)
+async def get_user_images(
+    db: Session = Depends(get_db),
+    user_id: int = None,
+    access_token: str = Depends(get_auth_header)
+):
+    try:
+        current_user = get_current_user(token=access_token, db=db)
+        logging.info(f"인증된 사용자: {current_user.email}")
+
+        if user_id is None:
+            user_id = current_user.id
+
+        logging.info(f"사용자 ID {user_id}의 이미지 가져오는 중")
+        health_entry = crud.get_user_images(db=db, user_id=user_id)
+
+        if not health_entry:
+            logging.info(f"사용자 ID {user_id}에 대한 이미지가 없습니다.")
+            raise HTTPException(status_code=404, detail="해당 사용자 ID에 대한 이미지가 없습니다.")
+
+        logging.info(f"사용자 ID {user_id}에 대한 이미지 찾음")
+        
+        return {
+            "user_id": health_entry.user_id,
+            "front_url": health_entry.front_url,
+            "side_url": health_entry.side_url
+        }
+        
+    except Exception as e:
+        logging.error("사용자 이미지 가져오는 중 오류 발생")
+        logging.error(traceback.format_exc())
+        return JSONResponse(status_code=500, content={"message": "이미지 가져오기 실패", "details": str(e)})

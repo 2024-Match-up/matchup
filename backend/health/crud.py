@@ -21,3 +21,6 @@ def create_health_entry_in_db(db: Session, health: schemas.HealthCreate):
     db.commit()
     db.refresh(user_health)
     return user_health
+
+def get_user_images(db: Session, user_id: int):
+    return db.query(Health).filter(Health.user_id == user_id).first()
