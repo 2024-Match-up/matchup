@@ -8,6 +8,10 @@ import 'camera/camera_screen.dart';
 import 'record/record_screen.dart';
 
 class BottomNavBar extends StatefulWidget {
+  final String accessToken;
+
+  BottomNavBar({required this.accessToken});
+
   @override
   _BottomNavBarState createState() => _BottomNavBarState();
 }
@@ -53,7 +57,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
             icon: Icon(Icons.account_circle),
             iconSize: screenWidth * 0.1, 
             onPressed: () {
-              showMyPageModal(context); // 모달 창을 띄우는 함수 호출
+              showMyPageModal(context, widget.accessToken); // 모달 창을 띄우는 함수 호출
             },
           ),
         ),
