@@ -20,7 +20,8 @@ from typing import List
 from health.crud import (create_health_entry_in_db,
                         submit_health_data,
                         restore_health_data,
-                        download_image_from_s3)
+                        download_image_from_s3,
+                        init_health_data)
 from health.schemas import HealthBase, HealthCreate, HealthInDBBase
 import models
 
@@ -130,7 +131,6 @@ async def create_upload_file(
             cv2.imwrite(file_path, image)
             score_dict = side.analyze_neck_angle(file_path)
             
-        print(score_dict)
         ## None인 경우, 에러 발생
         if score_dict is None:
             raise HTTPException(status_code=500, detail="Error occurred during image processing")
@@ -209,6 +209,8 @@ async def get_health_data(
         logging.error(traceback.format_exc())
         return JSONResponse(status_code=500, content={"message": "Failed to fetch health data", "details": str(e)})
 
+## API 테스트 툴로만 가능
+## 헤더 authorization에 Bearer 토큰을 넣어야함
 @router.get("/restore/")
 def restore_health_data_route(db: Session = Depends(get_db), access_token: str = Depends(get_auth_header)):
     """
@@ -222,3 +224,11 @@ def restore_health_data_route(db: Session = Depends(get_db), access_token: str =
     else:
         return JSONResponse(status_code=500, content={"message": "이미지 가져오기 실패", "details": str(e)})
 
+@router.get("/init/")
+def init_health_data(db:Session=Depends(get_db),access_token:str=Depends(get_auth_header)):
+    current_user = get_current_user(token = access_token, db =db)
+    
+    if init_health_data(db=db, user_id=current_user.id):
+        return JSONResponse(status_code=200, content={"message": "Health data initialized"})
+    else:
+        return JSONResponse(status_code=500, content={"message": "이미지 가져오기 실패", "details": str(e)})
