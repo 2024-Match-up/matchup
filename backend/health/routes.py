@@ -19,9 +19,13 @@ from health.crud import create_health_entry_in_db
 from health.schemas import HealthBase, HealthCreate, HealthInDBBase
 import models
 
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import OAuth2PasswordBearer,HTTPBearer, HTTPAuthorizationCredentials
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+security = HTTPBearer()
+# 의존성 함수 정의
+def get_auth_header(auth: HTTPAuthorizationCredentials = Depends(security)):
+    return auth.credentials
 
 router = APIRouter(
     prefix="/api/v1/health",
@@ -83,10 +87,12 @@ async def upload_file_to_s3(file: UploadFile, S3_BUCKET_NAME: str) -> str:
 @router.post("/upload/", response_model=schemas.Health)
 async def create_upload_file(
     file: UploadFile = File(...), 
-    db: Session = Depends(get_db), 
-    current_user: models.User = Depends(get_current_user)
-):
+    db: Session = Depends(get_db),
+    access_token: str = Depends(get_auth_header)
+):  
     try:
+        
+        current_user = get_current_user(token = access_token, db =db)
         logging.info(f"Authenticated user: {current_user.email}")
 
         logging.info("Starting file upload to S3")
