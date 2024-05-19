@@ -39,7 +39,7 @@ def submit_health_data(db: Session, user_id: int, part:str, score:int) -> bool:
     각 부위의 점수를 저장하는 함수
     """
     try:
-        db_health = db.query(Health).filter(Health.user_id == user_id).first()
+        db_health = db.query(Health).filter(Health.user_id == user_id).order_by(Health.createdAt.desc()).first()
         
         if db_health is None:
             raise HTTPException(status_code=400, detail="User not found")
@@ -103,4 +103,26 @@ def download_image_from_s3(image_url: str):
 def get_user_images(db: Session, user_id: int):
     return db.query(Health).filter(Health.user_id == user_id).first()
 
-
+def init_health_data(db: Session, user_id: int):
+    """
+    사용자의 건강 데이터를 초기화하는 함수
+    """
+    try:
+        logging.info("Initializing health data")
+        db_health = Health(
+            user_id=user_id,
+            createdAt=datetime.now(timezone.utc),
+            front_url="url",
+            side_url="url",
+            pelvis=0,
+            waist=0,
+            leg=0,
+            neck=0
+        )
+        db.add(db_health)
+        db.commit()
+        db.refresh(db_health)
+        return True
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
