@@ -1,3 +1,4 @@
+import traceback
 from fastapi import APIRouter, Depends, File, UploadFile, HTTPException
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session

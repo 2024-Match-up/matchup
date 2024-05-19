@@ -25,6 +25,7 @@ services:
   # MySQL 데이터베이스
   db:
     image: mysql:latest
+    container_name: db
     ports:
       - "3306:3306"
     environment:
@@ -37,17 +38,17 @@ services:
     networks:
       - app-network
   # 디비 조회용 GUI    
-  phpmyadmin:
-    image: phpmyadmin/phpmyadmin
-    links:
-      - db:mysql
-    ports:
-      - "8001:80"
-    environment:
-      PMA_HOST: db
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-    networks:
-      - app-network
+  # phpmyadmin:
+  #   image: phpmyadmin/phpmyadmin
+  #   links:
+  #     - db:mysql
+  #   ports:
+  #     - "8001:80"
+  #   environment:
+  #     PMA_HOST: db
+  #     MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+  #   networks:
+  #     - app-network
   
   # 젠킨스
   # jenkins:

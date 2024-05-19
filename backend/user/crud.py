@@ -3,7 +3,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi_another_jwt_auth import AuthJWT
 
 from .schemas import UserProfileUpdate, UserBase
-from models import User
+from models import User, Health
 from logger import logger
 from datetime import timedelta
 from configs import JWT_ACCESS_EXPIRE_MINUTES
@@ -85,6 +85,24 @@ def create_refresh_token(email: str, Authorize: AuthJWT):
     """
     return Authorize.create_refresh_token(subject=email)
 
+def init_health(db, user: UserBase):
+    """
+    초기 health 테이블 데이터 초기화
+    """
+    try:
+        db_user = db.query(User).filter(User.email == user.email).first()
+        db_health = Health(
+            user_id = db_user.id,
+        )
+        if db_user:
+            db.add(db_health)
+            db.commit()
+            db.refresh(db_health)
+    except Exception as e:
+        db.rollback()
+        return e
+    return True
+    
 def create_user(db, user: UserBase):
     """
     사용자 생성
@@ -106,46 +124,6 @@ def create_user(db, user: UserBase):
         db.rollback()
         return e
     return True
-
-# def create_health(db, health: HealthBase):
-#     """
-#     프로필 생성
-#     """
-#     try:
-#         user_health = Health(**health.model_dump())
-#         db.add(user_health)
-#         db.commit()
-#         db.refresh(user_health)
-#     except Exception as e:
-#         db.rollback()
-#         return e
-#     return True
-
-# def get_health(db, email: str):
-#     """
-#     프로필 조회
-#     """
-#     health_data = db.query(Health).join(User).filter(User.email == email).first()
-#     if health_data:
-#         return health_data
-#     else:
-#         return False
-
-# def update_health(db, email: str, health: dict):
-#     """
-#     프로필 수정
-#     """
-#     health_data = db.query(Health).join(User).filter(User.email == email).first()
-#     if not health_data:
-#         return False
-#     health_dict = health_data.__dict__
-#     logger.info(health_dict)
-#     for k, v in health.items():
-#         if health_dict[k] != v:
-#             logger.info(f"프로필 수정: key: {k}, value: {health_dict[k]} -> {v}")
-#             setattr(health_data, k, v)
-#     db.commit()
-#     return True
 
 def update_user_profile(db, email: str, profile_data: UserProfileUpdate) -> bool:
     user = get_user(db, email)
