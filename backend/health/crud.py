@@ -101,7 +101,7 @@ def download_image_from_s3(image_url: str):
     return user_health
 
 def get_user_images(db: Session, user_id: int):
-    return db.query(Health).filter(Health.user_id == user_id).first()
+    return db.query(Health).filter(Health.user_id == user_id).all()
 
 def init_health_data(db: Session, user_id: int):
     """

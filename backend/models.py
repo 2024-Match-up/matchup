@@ -29,6 +29,6 @@ class Health(Base):
     need = Column(Integer, default=0)
     side_url = Column(String(500), index=True, default="url")
     front_url = Column(String(500), index=True, default="url")
-    createdAt = Column(DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
+    createdAt = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 

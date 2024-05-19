@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional
+from typing import List
 
 class HealthBase(BaseModel):
     waist: int
@@ -41,8 +42,19 @@ class HealthLimited(BaseModel):
     class Config:
         orm_mode = True
 
-class HealthURLs(BaseModel):
-    user_id : int
+# class HealthURLs(BaseModel):
+#     user_id : int
+#     front_url: str
+#     side_url: str
+
+class HealthImage(BaseModel):
     front_url: str
     side_url: str
+    createdAt: datetime
 
+    class Config:
+        orm_mode = True
+
+class HealthURLs(BaseModel):
+    user_id: int
+    images: List[HealthImage]

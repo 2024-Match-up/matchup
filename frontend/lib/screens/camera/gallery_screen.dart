@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:provider/provider.dart';
-import 'package:matchup/models/UserProvider.dart'; 
-import 'image_viewer.dart'; 
+import 'package:matchup/models/UserProvider.dart';
+import 'image_viewer.dart';
 
 class GalleryScreen extends StatefulWidget {
   @override
@@ -43,8 +43,19 @@ class _GalleryScreenState extends State<GalleryScreen> {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
+        List<String> images = [];
+        for (var entry in data['images']) {
+          String? frontUrl = entry['front_url'];
+          String? sideUrl = entry['side_url'];
+          if (frontUrl != null && frontUrl != "url") {
+            images.add(frontUrl);
+          }
+          if (sideUrl != null && sideUrl != "url") {
+            images.add(sideUrl);
+          }
+        }
         setState(() {
-          imageList = [data['front_url'], data['side_url']];
+          imageList = images;
           isLoading = false;
         });
       } else {
@@ -109,3 +120,5 @@ class _GalleryScreenState extends State<GalleryScreen> {
     );
   }
 }
+
+
