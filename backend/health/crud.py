@@ -7,6 +7,7 @@ from models import Health
 import logging
 import numpy as np
 import cv2
+
 def create_health_entry_in_db(db: Session, health: schemas.HealthCreate):
     user_health = db.query(Health).filter(Health.user_id == health.user_id).first()
     if user_health is None:
@@ -27,8 +28,6 @@ def create_health_entry_in_db(db: Session, health: schemas.HealthCreate):
     db.add(user_health)
     db.commit()
     db.refresh(user_health)
-    ## 둘 다 url인 경우, front -> True 반환, 
-    ## 아닌 경우, side -> False 반환 
     return [user_health, is_front]
 
 def submit_health_data(db: Session, user_id: int, part:str, score:int) -> bool:
@@ -95,3 +94,8 @@ def download_image_from_s3(image_url: str):
         return image
     except requests.exceptions.RequestException as e:
         raise HTTPException(status_code=400, detail=f"Error downloading image: {e}")
+    return user_health
+
+def get_user_images(db: Session, user_id: int):
+    return db.query(Health).filter(Health.user_id == user_id).first()
+
