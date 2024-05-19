@@ -16,7 +16,6 @@ class HealthCreate(BaseModel):
     image_url : str
     createdAt: datetime
 
-
 class HealthInDBBase(HealthBase):
     id: int
     user_id: int
@@ -31,7 +30,6 @@ class Health(HealthInDBBase):
 class HealthInDB(HealthInDBBase):
     pass
 
-
 class HealthLimited(BaseModel):
     waist: int
     leg: int
@@ -42,3 +40,9 @@ class HealthLimited(BaseModel):
 
     class Config:
         orm_mode = True
+
+class HealthURLs(BaseModel):
+    user_id : int
+    front_url: str
+    side_url: str
+
