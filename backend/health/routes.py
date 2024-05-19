@@ -15,6 +15,7 @@ from health import crud, schemas,front,side
 
 from database import get_db, get_current_user
 import logging
+from typing import List
 
 from health.crud import (create_health_entry_in_db,
                         submit_health_data,
@@ -179,7 +180,35 @@ async def get_user_images(
         logging.error("사용자 이미지 가져오는 중 오류 발생")
         logging.error(traceback.format_exc())
         return JSONResponse(status_code=500, content={"message": "Upload failed", "details": str(e)})
-    
+
+@router.get("/graph/", response_model=List[schemas.HealthLimited])
+async def get_health_data(
+    db: Session = Depends(get_db),
+    user_id: int = None,
+    access_token: str = Depends(get_auth_header)
+):
+    try:
+        current_user = get_current_user(token=access_token, db=db)
+        logging.info(f"Authenticated user: {current_user.email}")
+
+        if user_id is None:
+            user_id = current_user.id
+
+        logging.info(f"Fetching health data for user ID {user_id}")
+        health_entries = crud.get_health_entries(db=db, user_id=user_id)
+
+        if not health_entries:
+            logging.info(f"No health data found for user ID {user_id}.")
+            raise HTTPException(status_code=404, detail="No health data found for this user.")
+
+        logging.info(f"Found health data for user ID {user_id}")
+        return health_entries
+
+    except Exception as e:
+        logging.error("Error fetching health data")
+        logging.error(traceback.format_exc())
+        return JSONResponse(status_code=500, content={"message": "Failed to fetch health data", "details": str(e)})
+
 @router.get("/restore/")
 def restore_health_data_route(db: Session = Depends(get_db), access_token: str = Depends(get_auth_header)):
     """

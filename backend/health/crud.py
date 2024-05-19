@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 from health import schemas
 import requests
 from models import Health
+from typing import List
 import logging
 import numpy as np
 import cv2
@@ -30,6 +31,9 @@ def create_health_entry_in_db(db: Session, health: schemas.HealthCreate):
     db.refresh(user_health)
     return [user_health, is_front]
 
+def get_health_entries(db: Session, user_id: int) -> List[schemas.HealthInDB]:
+    return db.query(Health).filter(Health.user_id == user_id).order_by(Health.createdAt).all()
+    
 def submit_health_data(db: Session, user_id: int, part:str, score:int) -> bool:
     """
     각 부위의 점수를 저장하는 함수
@@ -98,4 +102,5 @@ def download_image_from_s3(image_url: str):
 
 def get_user_images(db: Session, user_id: int):
     return db.query(Health).filter(Health.user_id == user_id).first()
+
 
