@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from datetime import datetime, timezone
 from health import schemas
 from models import Health
+from typing import List
 
 def create_health_entry_in_db(db: Session, health: schemas.HealthCreate):
     user_health = db.query(Health).filter(Health.user_id == health.user_id).first()
@@ -21,3 +22,6 @@ def create_health_entry_in_db(db: Session, health: schemas.HealthCreate):
     db.commit()
     db.refresh(user_health)
     return user_health
+
+def get_health_entries(db: Session, user_id: int) -> List[schemas.HealthInDB]:
+    return db.query(Health).filter(Health.user_id == user_id).order_by(Health.createdAt).all()

@@ -30,3 +30,15 @@ class Health(HealthInDBBase):
 
 class HealthInDB(HealthInDBBase):
     pass
+
+
+class HealthLimited(BaseModel):
+    waist: int
+    leg: int
+    pelvis: int
+    neck: int
+    user_id: int
+    createdAt: datetime
+
+    class Config:
+        orm_mode = True
