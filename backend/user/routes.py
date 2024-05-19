@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from fastapi.security import HTTPBearer
 from datetime import datetime
 
-from .crud import get_user, create_user, create_tokens_in_body, authenticate_access_token, authenticate_refresh_token, authenticate_user, update_user_profile
+from .crud import get_user, create_user, create_tokens_in_body, authenticate_access_token, authenticate_refresh_token, authenticate_user, update_user_profile, init_health
 from .schemas import Token,UserProfileUpdate, UserBase
 from logger import logger
 from database import get_db
@@ -44,10 +44,18 @@ async def signup(
             detail="이미 가입된 아이디입니다.",
         )
     userForm = UserBase(email=email, password=password, nickname=nickname, birth=birth, gender=gender)
+    
     result = create_user(db, userForm)
+    
     logger.info(result)
     if result != True:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,detail=result)
+    
+    health_result = init_health(db, userForm)
+    logger.info(health_result)
+    if health_result != True:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,detail=health_result)
+    
     response_body = create_tokens_in_body(email, Authorize)
     response_body["message"] = "유저 생성 및 로그인 성공"
     return JSONResponse(content=response_body, status_code=201)
