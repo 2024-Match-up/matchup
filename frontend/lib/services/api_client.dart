@@ -4,6 +4,7 @@ import 'dart:convert';
 class ApiClient {
   final String baseUrl = 'http://172.30.1.87:8000/api/v1';
 
+
   // 회원가입
   Future<void> signup(String email, String password, String nickname, DateTime birth, String gender) async {
     var response = await http.post(

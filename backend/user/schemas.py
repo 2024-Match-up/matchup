@@ -35,3 +35,4 @@ class UserProfileUpdate(BaseModel):
     nickname: str
     height: int
     weight: int
+

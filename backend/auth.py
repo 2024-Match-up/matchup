@@ -16,3 +16,4 @@ class Settings(BaseModel):
 @AuthJWT.load_config
 def get_config():
     return Settings()
+
