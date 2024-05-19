@@ -56,8 +56,8 @@ PyMySQL==1.1.0
 pyparsing==3.1.2
 python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
-python-jose==3.3.0
 python-multipart==0.0.9
+python-jose==3.3.0
 PyYAML==6.0.1
 requests==2.31.0
 rsa==4.9
