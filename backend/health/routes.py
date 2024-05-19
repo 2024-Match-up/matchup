@@ -225,7 +225,7 @@ def restore_health_data_route(db: Session = Depends(get_db), access_token: str =
         return JSONResponse(status_code=500, content={"message": "이미지 가져오기 실패", "details": str(e)})
 
 @router.get("/init/")
-def init_health_data(db:Session=Depends(get_db),access_token:str=Depends(get_auth_header)):
+def init_data(db:Session=Depends(get_db),access_token:str=Depends(get_auth_header)):
     current_user = get_current_user(token = access_token, db =db)
     
     if init_health_data(db=db, user_id=current_user.id):
