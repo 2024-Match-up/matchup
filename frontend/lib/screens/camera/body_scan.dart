@@ -9,7 +9,7 @@ import 'package:http_parser/http_parser.dart';
 import 'package:provider/provider.dart';
 import '/models/UserProvider.dart'; // 수정된 경로
 
-final String baseUrl = 'http://172.30.1.87:8000/api/v1';
+final String baseUrl = 'http://192.168.63.94:8000/api/v1';
 
 class BodyScanScreen extends StatefulWidget {
   const BodyScanScreen({Key? key}) : super(key: key);
@@ -23,7 +23,7 @@ class _BodyScanScreenState extends State<BodyScanScreen> {
   late CameraController _controller;
   late List<CameraDescription> _cameras;
   int _photoCount = 0;
-  int _remainingTime = 5;
+  int _remainingTime = 15;
   late Timer _timer;
 
   @override
@@ -111,7 +111,7 @@ class _BodyScanScreenState extends State<BodyScanScreen> {
           } else {
             _timer.cancel();
             takePicture();
-            _remainingTime = 5;
+            _remainingTime = 15;
             if (_photoCount < 1) {
               startCountdown();
             }
@@ -188,7 +188,7 @@ class _BodyScanScreenState extends State<BodyScanScreen> {
                     Text.rich(
                       TextSpan(
                         text: '$_remainingTime 초 후에 ',
-                        style: TextStyle(color: Colors.white, fontSize: 26),
+                        style: TextStyle(color: Colors.black, fontSize: 30, fontWeight: FontWeight.bold),
                         children: <TextSpan>[
                           TextSpan(
                             text: _photoCount == 0 ? '정면 촬영' : '측면 촬영',

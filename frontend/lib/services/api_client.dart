@@ -2,7 +2,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class ApiClient {
-  final String baseUrl = 'http://172.30.1.87:8000/api/v1';
+  final String baseUrl = 'http://192.168.63.94:8000/api/v1';
 
 
   // 회원가입

@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:matchup/models/UserProvider.dart';
 
-final String baseUrl = 'http://172.30.1.87:8000/api/v1';
+final String baseUrl = 'http://192.168.63.94:8000/api/v1';
 
 class RecordScreen extends StatefulWidget {
   @override
@@ -17,17 +17,22 @@ class _RecordScreenState extends State<RecordScreen> {
   late Future<List<FlSpot>> neckSpots;
   late Future<List<FlSpot>> legSpots;
   late Future<List<FlSpot>> waistSpots;
+  late Future<List<HealthData>> healthDataListFuture;
 
   @override
   void initState() {
     super.initState();
+    healthDataListFuture = fetchHealthData();
     pelvisSpots = fetchHealthSpots('pelvis');
     neckSpots = fetchHealthSpots('neck');
     legSpots = fetchHealthSpots('leg');
     waistSpots = fetchHealthSpots('waist');
   }
 
-  Future<List<HealthData>> fetchHealthData(String? accessToken) async {
+  Future<List<HealthData>> fetchHealthData() async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    String? accessToken = userProvider.accessToken;
+
     if (accessToken == null) {
       throw Exception('Access token is null');
     }
@@ -48,11 +53,11 @@ class _RecordScreenState extends State<RecordScreen> {
   }
 
   Future<List<FlSpot>> fetchHealthSpots(String metric) async {
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-    String? accessToken = userProvider.accessToken;
-    List<HealthData> healthDataList = await fetchHealthData(accessToken);
-    return healthDataList.map((data) {
-      double x = data.createdAt.millisecondsSinceEpoch.toDouble();
+    List<HealthData> healthDataList = await healthDataListFuture;
+    return healthDataList.asMap().entries.map((entry) {
+      int index = entry.key;
+      HealthData data = entry.value;
+      double x = index.toDouble(); // 날짜 대신 인덱스 사용
       double y = 0.0;
       switch (metric) {
         case 'waist':
@@ -105,7 +110,21 @@ class _RecordScreenState extends State<RecordScreen> {
               } else if (snapshot.hasError) {
                 return Text('Error: ${snapshot.error}');
               } else {
-                return PelvicTiltChart(spots: snapshot.data!);
+                return FutureBuilder<List<HealthData>>(
+                  future: healthDataListFuture,
+                  builder: (context, healthDataSnapshot) {
+                    if (healthDataSnapshot.connectionState == ConnectionState.waiting) {
+                      return CircularProgressIndicator();
+                    } else if (healthDataSnapshot.hasError) {
+                      return Text('Error: ${healthDataSnapshot.error}');
+                    } else {
+                      return PelvicTiltChart(
+                        spots: snapshot.data!,
+                        healthDataList: healthDataSnapshot.data!,
+                      );
+                    }
+                  },
+                );
               }
             },
           ),
@@ -135,8 +154,9 @@ class _RecordScreenState extends State<RecordScreen> {
 
 class PelvicTiltChart extends StatelessWidget {
   final List<FlSpot> spots;
+  final List<HealthData> healthDataList;
 
-  PelvicTiltChart({required this.spots});
+  PelvicTiltChart({required this.spots, required this.healthDataList});
 
   @override
   Widget build(BuildContext context) {
@@ -162,6 +182,8 @@ class PelvicTiltChart extends StatelessWidget {
         ],
         minY: 0,
         maxY: 100, // Adjust based on your data range
+        minX: 0,
+        maxX: (healthDataList.length - 1).toDouble(),
         titlesData: FlTitlesData(
           show: true,
           topTitles: AxisTitles(
@@ -169,6 +191,18 @@ class PelvicTiltChart extends StatelessWidget {
           ),
           rightTitles: AxisTitles(
             sideTitles: SideTitles(showTitles: false),
+          ),
+          bottomTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              reservedSize: 30,
+              getTitlesWidget: (value, meta) {
+                int index = value.toInt();
+                if (index < 0 || index >= healthDataList.length) return Text('');
+                return Text(healthDataList[index].formattedDate);
+              },
+              interval: 1,
+            ),
           ),
         ),
         gridData: FlGridData(show: true),
@@ -204,5 +238,9 @@ class HealthData {
       userId: json['user_id'],
       createdAt: DateTime.parse(json['createdAt']),
     );
+  }
+
+  String get formattedDate {
+    return '${createdAt.month}/${createdAt.day}';
   }
 }
