@@ -23,7 +23,7 @@ class _BodyScanScreenState extends State<BodyScanScreen> {
   late CameraController _controller;
   late List<CameraDescription> _cameras;
   int _photoCount = 0;
-  int _remainingTime = 5;
+  int _remainingTime = 15;
   late Timer _timer;
 
   @override
@@ -111,7 +111,7 @@ class _BodyScanScreenState extends State<BodyScanScreen> {
           } else {
             _timer.cancel();
             takePicture();
-            _remainingTime = 5;
+            _remainingTime = 15;
             if (_photoCount < 1) {
               startCountdown();
             }
@@ -188,7 +188,7 @@ class _BodyScanScreenState extends State<BodyScanScreen> {
                     Text.rich(
                       TextSpan(
                         text: '$_remainingTime 초 후에 ',
-                        style: TextStyle(color: Colors.white, fontSize: 26),
+                        style: TextStyle(color: Colors.black, fontSize: 30, fontWeight: FontWeight.bold),
                         children: <TextSpan>[
                           TextSpan(
                             text: _photoCount == 0 ? '정면 촬영' : '측면 촬영',
