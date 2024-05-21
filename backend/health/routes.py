@@ -78,7 +78,7 @@ async def upload_file_to_s3(file: UploadFile, S3_BUCKET_NAME: str) -> str:
         raise HTTPException(status_code=500, detail=f"오류 발생: {str(e)}")
 
 
-@router.post("/upload/", response_model=schemas.Health)
+@router.post("/upload/", summary="사진 업로드 및 체형 점수 계산", response_model=schemas.Health)
 async def create_upload_file(
     file: UploadFile = File(...), 
     db: Session = Depends(get_db),
@@ -148,38 +148,7 @@ async def create_upload_file(
         logging.error(traceback.format_exc())
         return JSONResponse(status_code=500, content={"message": "업로드 실패", "details": str(e)})
 
-# @router.get("/image", response_model=schemas.HealthURLs)
-# async def get_user_images(
-#     db: Session = Depends(get_db),
-#     user_id: int = None,
-#     access_token: str = Depends(get_auth_header)
-# ):
-#     try:
-#         current_user = get_current_user(token=access_token, db=db)
-#         logging.info(f"인증된 사용자: {current_user.email}")
-
-#         if user_id is None:
-#             user_id = current_user.id
-
-#         logging.info(f"사용자 ID {user_id}의 이미지 가져오는 중")
-#         health_entry = crud.get_user_images(db=db, user_id=user_id)
-
-#         if not health_entry:
-#             logging.info(f"사용자 ID {user_id}에 대한 이미지가 없습니다.")
-#             raise HTTPException(status_code=404, detail="해당 사용자 ID에 대한 이미지가 없습니다.")
-
-#         logging.info(f"사용자 ID {user_id}에 대한 이미지 찾음")
-        
-#         return [ {"user_id" : health_entry , "front_url" : health_entry.front_url, "side_url": health_entry.side_url} for x in health_entry]
-        
-        
-#     except Exception as e:
-#         logging.error("사용자 이미지 가져오는 중 오류 발생")
-#         logging.error(traceback.format_exc())
-#         return JSONResponse(status_code=500, content={"message": "Upload failed", "details": str(e)})
-
-
-@router.get("/image", response_model=schemas.HealthURLs)
+@router.get("/image", summary="S3 url로 이미지 조회", response_model=schemas.HealthURLs)
 async def get_user_images(
     db: Session = Depends(get_db),
     user_id: int = None,
@@ -210,7 +179,7 @@ async def get_user_images(
                     "createdAt": entry.createdAt
                 }
                 for entry in health_entries
-                if entry.front_url and entry.side_url  # Ensure both URLs are present
+                if entry.front_url and entry.side_url  
             ]
         }
     except Exception as e:
@@ -221,7 +190,7 @@ async def get_user_images(
 
 
 
-@router.get("/graph/", response_model=List[schemas.HealthLimited])
+@router.get("/graph/", summary="부위별 체형 점수 조회", response_model=List[schemas.HealthLimited])
 async def get_health_data(
     db: Session = Depends(get_db),
     user_id: int = None,
@@ -251,7 +220,7 @@ async def get_health_data(
 
 ## API 테스트 툴로만 가능
 ## 헤더 authorization에 Bearer 토큰을 넣어야함
-@router.get("/restore/")
+@router.get("/restore/", summary="사용자의 health 데이터 초기화")
 def restore_health_data_route(db: Session = Depends(get_db), access_token: str = Depends(get_auth_header)):
     """
     모든 사용자의 건강 데이터를 초기화하는 함수
@@ -264,7 +233,7 @@ def restore_health_data_route(db: Session = Depends(get_db), access_token: str =
     else:
         return JSONResponse(status_code=500, content={"message": "이미지 가져오기 실패", "details": str(e)})
 
-@router.get("/init/")
+@router.get("/init/", summary="사용자의 health 데이터 초기화")
 def init_data(db:Session=Depends(get_db),access_token:str=Depends(get_auth_header)):
     current_user = get_current_user(token = access_token, db =db)
     

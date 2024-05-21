@@ -17,13 +17,13 @@ def setha_angle(landmark1, landmark2):
 
 def calculate_neck_score(left_shoulder_setha):
     """Return score based on neck angle."""
-    if left_shoulder_setha > 30:
+    if left_shoulder_setha > 45:
         return 0
-    elif left_shoulder_setha < 20:
-        return 0
-    elif 20 <= left_shoulder_setha < 23:
+    # elif left_shoulder_setha < 20:
+    #     return 0
+    elif 20 <= left_shoulder_setha < 35:
         return 100
-    else:
+    elif 35 <= left_shoulder_setha < 45:
         return 50
 
 def analyze_neck_angle(image_path):
