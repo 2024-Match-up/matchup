@@ -1,5 +1,6 @@
 absl-py==2.1.0
 alembic==1.13.1
+aiofiles
 annotated-types==0.6.0
 anyio==4.3.0
 attrs==23.2.0

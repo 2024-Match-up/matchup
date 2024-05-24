@@ -126,6 +126,7 @@ try:
     models.Base.metadata.create_all(bind=engine)
     logger.info("테이블 생성 완료")
     insert_initial_data()  # 테이블 생성 후 초기 데이터 삽입
+    logger.info("초기 데이터 삽입 완료")
 except Exception as e:
     logger.error("테이블 생성 실패")
     logger.info(e)
@@ -141,6 +142,7 @@ def authjwt_exception_handler(request: Request, exc: AuthJWTException):
 @app.get("/")
 def hello():
     return {"message": "메인페이지입니다"}
+
 
 @app.get("/test-s3")
 async def test_s3_connection():
