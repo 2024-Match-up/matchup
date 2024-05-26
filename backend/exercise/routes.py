@@ -14,6 +14,8 @@ from datetime import datetime, timezone
 import pytz # 한국 시간대로 설졍
 from exercise.mediapipe.exercise.waist import WaistExercise
 from exercise.mediapipe.exercise.squart import SquatExercise
+from exercise.mediapipe.exercise.leg import LegExercise
+from exercise.mediapipe.exercise.neck import NeckExercise
 
 # 한국 시간대
 kst = pytz.timezone('Asia/Seoul')
@@ -74,10 +76,14 @@ async def websocket_endpoint(
         await websocket.send_text(f"Session created for exercise ID: {exercise_id}")
         logger.info(f"Session created for exercise ID: {exercise_id}")
 
-        if exercise_id == 4:
-            exercise = WaistExercise()
+        if exercise_id == 1:
+            exercise = NeckExercise() # 목 운동을 위한 클래스 인스턴스 생성
         elif exercise_id == 2:
             exercise = SquatExercise()  # 스쿼트 운동을 위한 클래스 인스턴스 생성
+        elif exercise_id == 3:
+            exercise = LegExercise() # 다리 운동을 위한 클래스 인스턴스 생성
+        elif exercise_id == 4:
+            exercise = WaistExercise() # 허리 운동을 위한 클래스 인스턴스 생성
         else:
             await websocket.send_text("Invalid exercise ID")
             await websocket.close()
