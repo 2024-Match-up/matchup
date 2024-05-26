@@ -19,7 +19,8 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: '>=3.3.0 <4.0.0'
+  # sdk: '>=3.3.0 <4.0.0'
+  sdk: ">=2.17.0 <3.0.0"
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -28,10 +29,10 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
-  flutter:
+  flutter: 
     sdk: flutter
   table_calendar: ^3.0.9
-  camera: ^0.10.5+9
+  camera: ^0.11.0
   path_provider: ^2.1.2
   path: ^1.7.0
   fl_chart: ^0.67.0
@@ -39,8 +40,12 @@ dependencies:
   http: ^1.2.1
   flutter_config: any
   http_parser: ^4.0.0
-  provider: ^6.1.2
+  provider: ^6.0.2
   photo_view: ^0.15.0
+  web_socket_channel: ^2.1.0
+  google_mlkit_commons: ^0.3.0
+  google_mlkit_pose_detection: ^0.6.0
+  lifecycle: ^0.8.0
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

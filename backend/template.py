@@ -1,55 +1,49 @@
 html = """
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image and Text WebSocket Example</title>
-    <style>
-        #result img {
-            width: 640px;
-            height: 480px;
-        }
-    </style>
-</head>
-<body>
-    <h1>Image and Text WebSocket Example</h1>
-    <div id="result"></div>
-    <button id="toggleButton">Toggle WebSocket Connection</button>
-
-    <script>
-        let socket;
-
-        document.getElementById('toggleButton').addEventListener('click', () => {
-            if (socket && socket.readyState === WebSocket.OPEN) {
-                socket.close();
-                console.log('WebSocket connection closed.');
-            } else {
-                socket = new WebSocket('ws://localhost:8000/api/v1/exercise/ws');
-                socket.onopen = () => {
-                    console.log('WebSocket connection established.');
+<html>
+    <head>
+        <title>Exercise WebSocket</title>
+    </head>
+    <body>
+        <h1>Exercise WebSocket</h1>
+        <form id="exerciseForm" onsubmit="sendExercise(event)">
+            <label for="exerciseId">Exercise ID:</label>
+            <input type="text" id="exerciseId" name="exerciseId" required><br><br>
+            <label for="coordinates">Coordinates:</label>
+            <input type="text" id="coordinates" name="coordinates" required><br><br>
+            <button type="submit">Send</button>
+        </form>
+        <ul id='messages'>
+        </ul>
+        <script>
+            var ws;
+            function sendExercise(event) {
+                event.preventDefault();
+                var exerciseId = document.getElementById('exerciseId').value;
+                var coordinates = document.getElementById('coordinates').value;
+                var message = {
+                    exerciseId: exerciseId,
+                    coordinates: coordinates
                 };
-                socket.onmessage = (event) => {
-                    const data = JSON.parse(event.data);
-                    const imageSrc = data.frame;
-                    const textMessage = data.message;
+                ws.send(JSON.stringify(message));
+            }
 
-                    // Replace the existing content of the result div
-                    document.getElementById('result').innerHTML = '';
-
-                    // Display the image
-                    const imageElement = document.createElement('img');
-                    imageElement.src = 'data:image/jpeg;base64,' + imageSrc;
-                    document.getElementById('result').appendChild(imageElement);
-
-                    // Display the text message
-                    const textElement = document.createElement('p');
-                    textElement.textContent = textMessage;
-                    document.getElementById('result').appendChild(textElement);
+            function connectWebSocket() {
+                ws = new WebSocket("ws://localhost:8000/api/v1/exercise/ws");
+                ws.onmessage = function(event) {
+                    var messages = document.getElementById('messages');
+                    var message = document.createElement('li');
+                    var content = document.createTextNode(event.data);
+                    message.appendChild(content);
+                    messages.appendChild(message);
+                };
+                ws.onopen = function(event) {
+                    console.log("WebSocket connected");
                 };
             }
-        });
-    </script>
-</body>
+
+            connectWebSocket();
+        </script>
+    </body>
 </html>
 """

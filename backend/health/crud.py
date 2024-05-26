@@ -8,6 +8,10 @@ from typing import List
 import logging
 import numpy as np
 import cv2
+import pytz # 한국 시간대로 설졍
+
+# 한국 시간대
+kst = pytz.timezone('Asia/Seoul')
 
 def create_health_entry_in_db(db: Session, health: schemas.HealthCreate):
     user_health = db.query(Health).filter(Health.user_id == health.user_id).order_by(Health.createdAt.desc()).first()
@@ -111,7 +115,7 @@ def init_health_data(db: Session, user_id: int):
         logging.info("Initializing health data")
         db_health = Health(
             user_id=user_id,
-            createdAt=datetime.now(timezone.utc),
+            createdAt=datetime.now(kst),
             front_url="url",
             side_url="url",
             pelvis=0,

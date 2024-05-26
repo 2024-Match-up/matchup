@@ -1,27 +1,85 @@
-import 'dart:async';
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:camera/camera.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:matchup/screens/exercise/pose/pose_painter.dart';
+import 'dart:async';
+import 'dart:convert';
+import 'package:web_socket_channel/web_socket_channel.dart';
+import 'pose/pose_detector_view.dart';
+import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart';
+import 'package:matchup/models/UserProvider.dart';
+import 'package:provider/provider.dart';
 
 class ExerciseCameraScreen extends StatefulWidget {
+  final int exerciseId;
+
+  ExerciseCameraScreen({required this.exerciseId});
+
   @override
   _ExerciseCameraScreenState createState() => _ExerciseCameraScreenState();
 }
 
 class _ExerciseCameraScreenState extends State<ExerciseCameraScreen> {
-  late CameraController _controller;
-  late Future<void> _initializeControllerFuture;
   late Timer _timer;
-  int _remainingTime = 15; 
+  late Timer _coordinateTimer;
+  int _remainingTime = 10;
   bool _isExercising = false;
+  late WebSocketChannel _channel;
+  List<Pose> _detectedPoses = [];
+  String feedback = "";
+  int realCount = 0;
+  int sets = 0;
+  bool _isWebSocketConnected = false;
 
   @override
   void initState() {
     super.initState();
-    _initializeCamera();
-    _timer = Timer.periodic(Duration(seconds: 1), (Timer timer) {
+
+    try {
+      _channel = WebSocketChannel.connect(
+        Uri.parse('ws://172.30.1.72:8000/api/v1/exercise/ws'),
+      );
+
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      String? accessToken = userProvider.accessToken;
+      _channel.sink.add(jsonEncode({
+        "exercise_id": widget.exerciseId,
+        "access_token": accessToken,
+      }));
+
+      // Listen to WebSocket stream
+      _channel.stream.listen(
+        (event) {
+          print('WebSocket event: $event');
+          // Parse the event and update feedback, realCount, and sets
+          final data = jsonDecode(event);
+          setState(() {
+            feedback = data['feedback'];
+            realCount = data['counter'];
+            sets = data['sets'];
+          });
+        },
+        onError: (error) {
+          print('WebSocket error: $error');
+          setState(() {
+            _isWebSocketConnected = false;
+          });
+        },
+        onDone: () {
+          print('WebSocket connection closed.');
+          setState(() {
+            _isWebSocketConnected = false;
+          });
+        },
+      );
+
+      setState(() {
+        _isWebSocketConnected = true;
+      });
+
+    } catch (e) {
+      print('WebSocket connection failed: $e');
+    }
+
+    _timer = Timer.periodic(Duration(milliseconds: 100), (Timer timer) {
       if (_remainingTime > 0) {
         setState(() {
           _remainingTime--;
@@ -29,33 +87,21 @@ class _ExerciseCameraScreenState extends State<ExerciseCameraScreen> {
       } else {
         setState(() {
           _isExercising = true;
-          _timer.cancel(); 
+          _timer.cancel();
+          // Send coordinates periodically
+          _sendCoordinatesPeriodically();
         });
       }
     });
   }
 
-  Future<void> _initializeCamera() async {
-    final cameras = await availableCameras();
-    _controller = CameraController(
-      cameras.firstWhere(
-        (camera) => camera.lensDirection == CameraLensDirection.front,
-      ),
-      ResolutionPreset.high,
-    );
-
-    _initializeControllerFuture = _controller.initialize().catchError((Object e) {
-      if (!mounted) {
-        return;
-      }
-      print('Camera initialization error: $e');
-    });
-  }
-
   @override
   void dispose() {
-    _controller.dispose();
     _timer.cancel();
+    if (_coordinateTimer != null && _coordinateTimer.isActive) {
+      _coordinateTimer.cancel();
+    }
+    _channel.sink.close();
     super.dispose();
   }
 
@@ -65,55 +111,89 @@ class _ExerciseCameraScreenState extends State<ExerciseCameraScreen> {
       appBar: AppBar(
         title: Text('운동 시작하기'),
       ),
-      body: FutureBuilder<void>(
-        future: _initializeControllerFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
-            if (!_controller.value.isInitialized) {
-              return Text('Camera Initialization Failed');
-            }
-            return Column(
+      body: _isExercising
+          ? Stack(
               children: [
-                Expanded(
-                  child: Container(
-                    width: MediaQuery.of(context).size.width, 
-                    child: CameraPreview(_controller)
+                Positioned.fill(
+                  child: PoseDetectorView(
+                    onPosesDetected: (poses) {
+                      setState(() {
+                        _detectedPoses = poses;
+                      });
+                    },
                   ),
                 ),
-                buildExerciseInfo(context), 
+                Positioned(
+                  top: 16,
+                  left: 16,
+                  child: Text(
+                    'Count: $realCount',
+                    style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: Colors.black),
+                  ),
+                ),
+                Positioned(
+                  top: 16,
+                  right: 16,
+                  child: Text(
+                    'Sets: $sets',
+                    style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: Colors.black),
+                  ),
+                ),
+                Positioned(
+                  bottom: 16,
+                  left: 16,
+                  right: 16,
+                  child: Text(
+                    'Feedback: $feedback',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold, color: Colors.black),
+                  ),
+                ),
               ],
-            );
-          } else {
-            return Center(child: CircularProgressIndicator());
-          }
-        },
-      ),
+            )
+          : Center(
+              child: Text(
+                '$_remainingTime 초 후에 운동이 시작됩니다.',
+                style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
+              ),
+            ),
     );
   }
 
-  Widget buildExerciseInfo(BuildContext context) {
-    double screenWidth = MediaQuery.of(context).size.width;
-    double fontSize = screenWidth * 0.04;
+  void _sendCoordinatesPeriodically() {
+    _coordinateTimer = Timer.periodic(Duration(milliseconds: 100), (Timer timer) {
+      if (_isExercising && _isWebSocketConnected) {
+        List<Offset> coordinates = [];
+        switch (widget.exerciseId) {
+          case 1:
+            // coordinates = PosePainter.getNeckCoordinates(_detectedPoses);
+            break;
+          case 2:
+            // coordinates = PosePainter.getPelvisCoordinates(_detectedPoses);
+            break;
+          case 3:
+            // coordinates = PosePainter.getLegCoordinates(_detectedPoses);
+            break;
+          case 4:
+            coordinates = PosePainter.getWaistCoordinates(_detectedPoses);
+            break;
+          default:
+            coordinates = [];
+        }
+        _channel.sink.add(jsonEncode({
+          "coordinates": coordinates.map((offset) => customEncode(offset)).toList(),
+        }));
+        print('Coordinates: $coordinates');
+      } else {
+        timer.cancel();
+      }
+    });
+  }
 
-    return Column(
-      children: [
-        if (!_isExercising)
-          Padding(
-            padding: EdgeInsets.all(screenWidth * 0.02),
-            child: Text(
-              ' $_remainingTime 초후에 운동이 시작됩니다.',
-              style: TextStyle(fontSize: fontSize, fontWeight: FontWeight.bold),
-            ),
-          ),
-        if (_isExercising)
-          Padding(
-            padding: EdgeInsets.all(screenWidth * 0.02),
-            child: Text(
-              'Exercise in progress...',
-              style: TextStyle(fontSize: fontSize, fontWeight: FontWeight.bold),
-            ),
-          ),
-      ],
-    );
+  dynamic customEncode(dynamic item) {
+    if (item is Offset) {
+      return {'dx': item.dx, 'dy': item.dy};
+    }
+    return item;
   }
 }

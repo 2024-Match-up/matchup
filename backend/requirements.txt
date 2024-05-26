@@ -1,5 +1,6 @@
 absl-py==2.1.0
 alembic==1.13.1
+aiofiles
 annotated-types==0.6.0
 anyio==4.3.0
 attrs==23.2.0
@@ -44,6 +45,7 @@ opencv-python==4.9.0.80
 opt-einsum==3.3.0
 packaging==24.0
 passlib==1.7.4
+pytz
 pillow==10.3.0
 protobuf==3.20.3
 pyasn1==0.6.0

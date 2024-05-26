@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'neck.dart'; 
 import 'hip.dart';
 import 'waist.dart';
 import 'leg.dart';
 
-class ExerciseScreen extends StatelessWidget {
+class ExerciseScreen extends StatefulWidget {
+  @override
+  _ExerciseScreenState createState() => _ExerciseScreenState();
+}
+
+class _ExerciseScreenState extends State<ExerciseScreen> {
+
   @override
   Widget build(BuildContext context) {
     return ListView(
@@ -17,10 +22,7 @@ class ExerciseScreen extends StatelessWidget {
           sets: '4 sets',
           reps: '8-10 reps',
           onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => NeckStretchScreen()),
-            );
+            _navigateToScreen(NeckStretchScreen());
           },
         ),
         ExerciseCard(
@@ -30,10 +32,7 @@ class ExerciseScreen extends StatelessWidget {
           sets: '4 sets',
           reps: '8-10 reps',
           onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => HipStretchScreen()),
-            );
+            _navigateToScreen(HipStretchScreen());
           },
         ),
         ExerciseCard(
@@ -43,10 +42,7 @@ class ExerciseScreen extends StatelessWidget {
           sets: '4 sets',
           reps: '8-10 reps',
           onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => LegStretchScreen()),
-            );
+            _navigateToScreen(LegStretchScreen());
           },
         ),
         ExerciseCard(
@@ -56,13 +52,17 @@ class ExerciseScreen extends StatelessWidget {
           sets: '4 sets',
           reps: '8-10 reps',
           onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => WaistStretchScreen()),
-            );
+            _navigateToScreen(WaistStretchScreen());
           },
         ),
       ],
+    );
+  }
+
+  void _navigateToScreen(Widget screen) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => screen),
     );
   }
 }
@@ -73,7 +73,7 @@ class ExerciseCard extends StatelessWidget {
   final String calories;
   final String sets;
   final String reps;
-  final VoidCallback? onTap; 
+  final VoidCallback? onTap;
 
   const ExerciseCard({
     Key? key,
