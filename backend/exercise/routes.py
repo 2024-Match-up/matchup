@@ -13,7 +13,7 @@ from user.crud import authenticate_access_token, get_user
 from datetime import datetime, timezone
 import pytz # 한국 시간대로 설졍
 from exercise.mediapipe.exercise.waist import WaistExercise
-from backend.exercise.mediapipe.exercise.squat import SquatExercise
+from exercise.mediapipe.exercise.squat import SquatExercise
 from exercise.mediapipe.exercise.leg import LegExercise
 from exercise.mediapipe.exercise.neck import NeckExercise
 
