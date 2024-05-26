@@ -107,7 +107,7 @@ def get_current_user(token: str, db: Session = Depends(get_db)):
 
 def insert_initial_data():
     from models import Exercise
-    from exercise.mediapipe.exercise.waist import get_waist_coordinates  # 필요한 함수 임포트
+    from exercise.mediapipe.exercise.waist import WaistExercise
     db = SessionLocal()
     try:
         exercises = [
@@ -137,7 +137,7 @@ def insert_initial_data():
                 count=10,
                 set=3,
                 time=0,
-                coordinate_list=get_waist_coordinates(),
+                coordinate_list=WaistExercise.get_waist_coordinates(),
             )
         ]
         db.add_all(exercises)

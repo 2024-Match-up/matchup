@@ -6,9 +6,11 @@ from .schemas import UserProfileUpdate, UserBase
 from models import User, Health
 from logger import logger
 from datetime import timedelta
-from configs import JWT_ACCESS_EXPIRE_MINUTES
+from configs import JWT_ACCESS_EXPIRE_MINUTES, JWT_SECRET_KET
 import random
 import string
+import jwt
+import time
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -46,14 +48,38 @@ def authenticate_user(db, email: str, password: str):
         return False
     return user
 
-def authenticate_access_token(Authorize: AuthJWT) -> str:
+# def authenticate_access_token(Authorize: AuthJWT) -> str:
+#     """
+#     엑세스 토큰 인증 및 유저 이메일 반환
+#     """
+#     Authorize.jwt_required()
+#     email = Authorize.get_jwt_subject()
+#     logger.info(f"유저 이메일: {email} 엑세스 토큰 확인 완료")
+#     return email
+
+def authenticate_access_token(access_token: str, Authorize: AuthJWT) -> str:
     """
     엑세스 토큰 인증 및 유저 이메일 반환
     """
-    Authorize.jwt_required()
-    email = Authorize.get_jwt_subject()
-    logger.info(f"유저 이메일: {email} 엑세스 토큰 확인 완료")
-    return email
+    try:
+        Authorize.jwt_required("Bearer", token=access_token)
+        email = Authorize.get_jwt_subject()
+        if email is None:
+            decoded_token = decode_jwt(access_token)
+            email = decoded_token.get("sub") if decoded_token else None
+        logger.info(f"유저 이메일: {email} 엑세스 토큰 확인 완료")
+        return email
+    except Exception as e:
+        logger.error(f"Failed to extract email from token: {e}")
+        raise ValueError("Invalid access token") from e
+
+def decode_jwt(token: str):
+    try:
+        decoded_token = jwt.decode(token, JWT_SECRET_KET, algorithms=["HS256"])
+        return decoded_token if decoded_token["exp"] >= time.time() else None
+    except Exception as e:
+        logger.error(f"Token decoding error: {e}")
+        return None
 
 def authenticate_refresh_token(Authorize: AuthJWT) -> str:
     """
@@ -139,3 +165,4 @@ def update_user_profile(db, email: str, profile_data: UserProfileUpdate) -> bool
         db.rollback()
         print(e)
         return False
+

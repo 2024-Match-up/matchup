@@ -3,16 +3,11 @@ import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart';
 
 import 'coordinates_translator.dart';
 
-// 스켈레톤을 화면에 그려주는 클래스(추출된 포즈의 관절 랜드마크 배열, 이미지 크기, 이미지 회전 정보)
-// translateX, translateY를 사용해 추출된 좌표를 휴대폰 화면 크기에 맞게 변형하여 그려줌
 class PosePainter extends CustomPainter {
   PosePainter(this.poses, this.absoluteImageSize, this.rotation);
 
-  // 추출된 포즈의 랜드마크 리스트
   final List<Pose> poses;
-  // 이미지 크기
   final Size absoluteImageSize;
-  // 이미지 회전 정보
   final InputImageRotation rotation;
 
   @override
@@ -85,6 +80,38 @@ class PosePainter extends CustomPainter {
       paintLine(
           PoseLandmarkType.rightKnee, PoseLandmarkType.rightAnkle, rightPaint);
     }
+  }
+
+  // 허리 좌표를 반환하는 함수
+  static List<Offset> getWaistCoordinates(List<Pose> poses) {
+    final List<Offset> coordinates = [];
+    for (final pose in poses) {
+      coordinates.add(
+        Offset(
+          pose.landmarks[PoseLandmarkType.leftShoulder]!.x,
+          pose.landmarks[PoseLandmarkType.leftShoulder]!.y,
+        ),
+      );
+      coordinates.add(
+        Offset(
+          pose.landmarks[PoseLandmarkType.rightShoulder]!.x,
+          pose.landmarks[PoseLandmarkType.rightShoulder]!.y,
+        ),
+      );
+      coordinates.add(
+        Offset(
+          pose.landmarks[PoseLandmarkType.leftElbow]!.x,
+          pose.landmarks[PoseLandmarkType.leftElbow]!.y,
+        ),
+      );
+      coordinates.add(
+        Offset(
+          pose.landmarks[PoseLandmarkType.rightElbow]!.x,
+          pose.landmarks[PoseLandmarkType.rightElbow]!.y,
+        ),
+      );
+    }
+    return coordinates;
   }
 
   @override

@@ -2,6 +2,10 @@ from sqlalchemy import Column, Integer, String, Float, DateTime, Enum, ForeignKe
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
 from database import Base
+import pytz # 한국 시간대로 설졍
+
+# 한국 시간대
+kst = pytz.timezone('Asia/Seoul')
 
 class User(Base):
     __tablename__ = "user"
@@ -14,8 +18,8 @@ class User(Base):
     gender = Column(Enum("Male", "Female"))
     height = Column(Integer, default=0)
     weight = Column(Integer, default=0)
-    created = Column(DateTime, default=datetime.now(timezone.utc))
-    updated = Column(DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
+    created = Column(DateTime, default=datetime.now(kst))
+    updated = Column(DateTime, default=datetime.now(kst), onupdate=datetime.now(kst))
 
     sessions = relationship("Session", backref="user")
 
@@ -31,7 +35,7 @@ class Health(Base):
     need = Column(Integer, default=0)
     side_url = Column(String(500), index=True, default="url")
     front_url = Column(String(500), index=True, default="url")
-    createdAt = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    createdAt = Column(DateTime, default=lambda: datetime.now(kst))
 
     
 class Exercise(Base):
@@ -54,8 +58,4 @@ class Session(Base):
     user_id = Column(Integer, ForeignKey("user.id"))
     exercise_id = Column(Integer, ForeignKey("exercise.id"))
     date = Column(DateTime)
-    feedback = Column(String(500))
-    status = Column(Enum("not_started", "ongoing", "completed"), default="ongoing")  # 상태 필드 추가
-    coordinate = Column(JSON)  # 실시간 좌표 필드 추가
-    real_count = Column(Integer)
 

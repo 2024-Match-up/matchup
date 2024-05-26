@@ -17,6 +17,11 @@ from database import get_db, get_current_user
 import logging
 from typing import List
 
+import pytz # 한국 시간대로 설졍
+
+# 한국 시간대
+kst = pytz.timezone('Asia/Seoul')
+
 from health.crud import (create_health_entry_in_db,
                         submit_health_data,
                         restore_health_data,
@@ -55,7 +60,7 @@ s3_client = boto3.client(
 
 async def upload_file_to_s3(file: UploadFile, S3_BUCKET_NAME: str) -> str:
     try:
-        file_name = f"{datetime.utcnow().isoformat()}-{file.filename}"
+        file_name = f"{datetime.noew(kst).isoformat()}-{file.filename}"
         content_type = file.content_type
 
         s3_client.upload_fileobj(
@@ -96,7 +101,7 @@ async def create_upload_file(
         health_data = schemas.HealthCreate(
             user_id=current_user.id,
             image_url=image_url,
-            createdAt=datetime.now(timezone.utc)
+            createdAt=datetime.now(kst)
         )
 
         logging.info(f"건강 데이터 유효성 검사: {health_data}")

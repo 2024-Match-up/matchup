@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:matchup/screens/exercise/pose/pose_painter.dart';
 import 'dart:async';
+import 'dart:convert';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'pose/pose_detector_view.dart';
+import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart';
+import 'package:matchup/models/UserProvider.dart';
+import 'package:provider/provider.dart';
 
 class ExerciseCameraScreen extends StatefulWidget {
   final int exerciseId;
@@ -14,19 +19,63 @@ class ExerciseCameraScreen extends StatefulWidget {
 
 class _ExerciseCameraScreenState extends State<ExerciseCameraScreen> {
   late Timer _timer;
+  late Timer _coordinateTimer;
   int _remainingTime = 10;
   bool _isExercising = false;
   late WebSocketChannel _channel;
+  List<Pose> _detectedPoses = [];
+  String feedback = "";
+  int realCount = 0;
+  bool _isWebSocketConnected = false;
 
   @override
   void initState() {
     super.initState();
 
-    // 웹소켓 채널 초기화
-    _channel = WebSocketChannel.connect(Uri.parse('ws://172.30.1.72:8000/api/v1/exercise/ws'));
+    try {
+      _channel = WebSocketChannel.connect(
+        Uri.parse('ws://172.30.1.72:8000/api/v1/exercise/ws'),
+      );
 
-    // 운동 아이디 전송
-    _channel.sink.add(widget.exerciseId.toString());
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      String? accessToken = userProvider.accessToken;
+      _channel.sink.add(jsonEncode({
+        "exercise_id": widget.exerciseId,
+        "access_token": accessToken,
+      }));
+
+      // Listen to WebSocket stream
+      _channel.stream.listen(
+        (event) {
+          print('WebSocket event: $event');
+          // Parse the event and update feedback and realCount
+          // final data = jsonDecode(event);
+          // setState(() {
+          //   feedback = data['feedback'];
+          //   realCount = data['real_count'];
+          // });
+        },
+        onError: (error) {
+          print('WebSocket error: $error');
+          setState(() {
+            _isWebSocketConnected = false;
+          });
+        },
+        onDone: () {
+          print('WebSocket connection closed.');
+          setState(() {
+            _isWebSocketConnected = false;
+          });
+        },
+      );
+
+      setState(() {
+        _isWebSocketConnected = true;
+      });
+
+    } catch (e) {
+      print('WebSocket connection failed: $e');
+    }
 
     _timer = Timer.periodic(Duration(seconds: 1), (Timer timer) {
       if (_remainingTime > 0) {
@@ -37,6 +86,8 @@ class _ExerciseCameraScreenState extends State<ExerciseCameraScreen> {
         setState(() {
           _isExercising = true;
           _timer.cancel();
+          // Send coordinates periodically
+          _sendCoordinatesPeriodically();
         });
       }
     });
@@ -45,6 +96,9 @@ class _ExerciseCameraScreenState extends State<ExerciseCameraScreen> {
   @override
   void dispose() {
     _timer.cancel();
+    if (_coordinateTimer != null && _coordinateTimer.isActive) {
+      _coordinateTimer.cancel();
+    }
     _channel.sink.close();
     super.dispose();
   }
@@ -56,7 +110,27 @@ class _ExerciseCameraScreenState extends State<ExerciseCameraScreen> {
         title: Text('운동 시작하기'),
       ),
       body: _isExercising
-          ? PoseDetectorView()
+          ? Column(
+              children: [
+                Expanded(
+                  child: PoseDetectorView(
+                    onPosesDetected: (poses) {
+                      setState(() {
+                        _detectedPoses = poses;
+                      });
+                    },
+                  ),
+                ),
+                Text(
+                  'Feedback: $feedback',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  'Count: $realCount',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+              ],
+            )
           : Center(
               child: Text(
                 '$_remainingTime 초 후에 운동이 시작됩니다.',
@@ -64,5 +138,43 @@ class _ExerciseCameraScreenState extends State<ExerciseCameraScreen> {
               ),
             ),
     );
+  }
+
+  void _sendCoordinatesPeriodically() {
+    _coordinateTimer = Timer.periodic(Duration(milliseconds: 100), (Timer timer) {
+      if (_isExercising && _isWebSocketConnected) {
+        List<Offset> coordinates = [];
+        switch (widget.exerciseId) {
+          case 1:
+            // coordinates = PosePainter.getNeckCoordinates(_detectedPoses);
+            break;
+          case 2:
+            // coordinates = PosePainter.getPelvisCoordinates(_detectedPoses);
+            break;
+          case 3:
+            // coordinates = PosePainter.getLegCoordinates(_detectedPoses);
+            break;
+          case 4:
+            coordinates = PosePainter.getWaistCoordinates(_detectedPoses);
+            break;
+          default:
+            coordinates = [];
+        }
+        _channel.sink.add(jsonEncode({
+          "coordinates": coordinates.map((offset) => customEncode(offset)).toList(),
+        }));
+        print('Coordinates: $coordinates');
+      } else {
+        timer.cancel();
+      }
+    });
+  }
+  
+
+  dynamic customEncode(dynamic item) {
+    if (item is Offset) {
+      return {'dx': item.dx, 'dy': item.dy};
+    }
+    return item;
   }
 }

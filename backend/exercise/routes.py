@@ -1,143 +1,118 @@
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends, HTTPException
-# from auth import AuthJWT
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect, HTTPException, BackgroundTasks, Depends
 from fastapi.responses import HTMLResponse
+from fastapi_another_jwt_auth import AuthJWT
 from template import html
-from .crud import send_detection_results
-from datetime import datetime
-import json
-from models import Exercise, Session as ExerciseSession
 from logger import logger
+import json
+import asyncio
+from session.crud import create_session
+from session.schemas import Session
 from database import get_db
+from auth import AuthJWT
+from user.crud import authenticate_access_token, get_user
+from datetime import datetime, timezone
+import pytz # 한국 시간대로 설졍
+from exercise.mediapipe.exercise.waist import WaistExercise
 
+# 한국 시간대
+kst = pytz.timezone('Asia/Seoul')
 
 router = APIRouter(
     prefix="/api/v1/exercise",
     tags=["exercise"],
 )
 
-# 요청을 받으면 html 내용을 HTML 응답으로 반환한다. 
+# 운동을 시작하는 HTML 페이지를 반환하는 엔드포인트
 @router.get("/")
 async def get():
     return HTMLResponse(html)
 
-
-@router.websocket("/ws") # 웹소켓 연결을 처리하는 엔드포인트
+@router.websocket("/test") # 웹소켓 연결을 처리하는 엔드포인트
 async def websocket_endpoint(websocket: WebSocket):
+    logger.info("test1")
     await websocket.accept() # 클라이언트의 웬소켓 연결을 수락
-    await send_detection_results(websocket) 
-    # 실시간으로 데이터를 주고받는 기능을 수행하는 함수로, 웹소켓 객체를 인수로 받아 데이터를 처리 
+    
+async def keep_websocket_alive(websocket: WebSocket):
+    while True:
+        await asyncio.sleep(10)  # 10초마다 웹 소켓 연결 확인
+        try:
+            await websocket.send_text("ping")  # 연결 확인을 위한 메시지 전송
+        except Exception as e:
+            # 연결이 끊어진 경우에는 다시 연결 시도 또는 새로운 연결 생성
+            # 이 부분을 웹 소켓 재연결 로직으로 수정하여 사용합니다.
+            print("WebSocket connection error:", e)
 
-
-html = """
-<!DOCTYPE html>
-<html>
-    <head>
-        <title>Exercise WebSocket</title>
-    </head>
-    <body>
-        <h1>Exercise WebSocket</h1>
-        <form action="" onsubmit="sendMessage(event)">
-            <input type="text" id="messageText" autocomplete="off"/>
-            <button>Send</button>
-        </form>
-        <ul id='messages'>
-        </ul>
-        <script>
-            var ws = new WebSocket("ws://localhost:8000/api/v1/exercise/ws/5");  // 세션 ID를 적절히 수정
-            ws.onmessage = function(event) {
-                var messages = document.getElementById('messages')
-                var message = document.createElement('li')
-                var content = document.createTextNode(event.data)
-                message.appendChild(content)
-                messages.appendChild(message)
-            };
-            ws.onclose = function(event) {
-                var messages = document.getElementById('messages')
-                var message = document.createElement('li')
-                var content = document.createTextNode("WebSocket connection closed")
-                message.appendChild(content)
-                messages.appendChild(message)
-            };
-            function sendMessage(event) {
-                var input = document.getElementById("messageText")
-                var data = JSON.stringify({
-                    coordinates: [1, 2, 3, 4],
-                    count: parseInt(input.value)
-                });
-                ws.send(data)
-                input.value = ''
-                event.preventDefault()
-            }
-        </script>
-    </body>
-</html>
-"""
-
-
-@router.post("/start-exercise/{exercise_id}/{user_id}")
-async def start_exercise(exercise_id: int, user_id: int, db: Session = Depends(get_db)):
-    # 운동 정보를 가져오기
-    exercise = db.query(Exercise).filter(Exercise.id == exercise_id).first()
-    if not exercise:
-        raise HTTPException(status_code=404, detail="Exercise not found")
-
-    # 세션 생성 및 DB에 저장
-    session = ExerciseSession(
-        user_id=user_id,
-        exercise_id=exercise_id,
-        date=datetime.now(),
-        status="not_started",
-        coordinates=exercise.coordinate_list
-    )
-    db.add(session)
-    db.commit()
-    db.refresh(session)
-
-    return {"session_id": session.id, "status": session.status, "coordinates": session.coordinates}
-
-@router.websocket("/ws/{session_id}")
-async def websocket_endpoint(websocket: WebSocket, session_id: int, db: Session = Depends(get_db)):
+@router.websocket("/ws")
+async def websocket_endpoint(
+    websocket: WebSocket,
+    background_tasks: BackgroundTasks,
+    Authorize: AuthJWT = Depends(),
+    db: Session = Depends(get_db),
+):
     await websocket.accept()
+    background_tasks.add_task(keep_websocket_alive, websocket)
+    
+    try:
+        initial_data = await websocket.receive_text()
+        logger.info(f"Received initial data: {initial_data}")
+        initial_payload = json.loads(initial_data)
+        exercise_id = initial_payload.get("exercise_id")
+        access_token = initial_payload.get("access_token")
 
-    session = db.query(ExerciseSession).filter(ExerciseSession.id == session_id).first()
-    if not session:
-        await websocket.close(code=1003)
+        email = authenticate_access_token(access_token, Authorize)
+        logger.info(f"Authenticated user: {email}") 
+
+        user = get_user(db, email)
+        logger.info(f"User: {user}")
+        if user is None:
+            raise ValueError(f"User not found for email: {email}")
+        userId = user.id
+        logger.info(f"Authenticated user: {email} with userId: {userId}")
+
+        create_session(db, user_id=userId, exercise_id=exercise_id, date=datetime.now(kst))
+        await websocket.send_text(f"Session created for exercise ID: {exercise_id}")
+        logger.info(f"Session created for exercise ID: {exercise_id}")
+
+        if exercise_id == 4:
+            exercise = WaistExercise()
+        # 다른 운동 로직도 여기에 추가
+        # elif exercise_id == 1:
+        #    exercise = NeckExercise()
+        else:
+            await websocket.send_text("Invalid exercise ID")
+            await websocket.close()
+            return
+
+    except Exception as e:
+        logger.error(f"Authentication failed: {e}")
+        await websocket.send_text(f"Authentication failed: {e}")
+        await websocket.close()
         return
-
-    session.status = "ongoing"
-    db.commit()
 
     try:
         while True:
-            try:
-                data = await websocket.receive_text()
-                data = json.loads(data)
-                
-                coordinates = data.get("coordinates", [])
-                count = data.get("count")
+            data = await websocket.receive_text()
+            coordinates = json.loads(data)
+            logger.info(f"Received coordinates: {coordinates}")
 
-                if count is None:
-                    raise ValueError("Count value is missing")
-
-                # 실시간 피드백 계산
-                feedback = "Good" if count % 2 == 0 else "Bad"  # 예시 피드백 로직
-                session.feedback = feedback
-                session.real_count = count
-                db.commit()
-
-                response = {
-                    "coordinates": coordinates,
-                    "count": count,
-                    "feedback": feedback
-                }
-                await websocket.send_text(json.dumps(response))
-            except json.JSONDecodeError as e:
-                await websocket.send_text(json.dumps({"error": "Invalid JSON format", "details": str(e)}))
-            except ValueError as e:
-                await websocket.send_text(json.dumps({"error": "Value error", "details": str(e)}))
-            except Exception as e:
-                await websocket.send_text(json.dumps({"error": "Error processing message", "details": str(e)}))
+            if exercise_id == 4:
+                try:
+                    metrics = exercise.calculate_metrics(coordinates=coordinates)
+                    logger.info(f"Metrics: {metrics}")
+                    await websocket.send_json(metrics)
+                    logger.info(f"Sent metrics: {metrics}")
+                except Exception as e:
+                    logger.error(f"Error calculating metrics: {e}")
+                    await websocket.send_json({'error': str(e)})
+            # elif exercise_id == 1:
+            #    metrics = exercise.calculate_metrics(coordinates)
+            #    await websocket.send_json(metrics)
+            # else:
+            #    metrics = {'error': 'Invalid exercise_id'}
+            #    await websocket.send_json(metrics)
 
     except WebSocketDisconnect:
-        session.status = "disconnected"
-        db.commit()
+        logger.info("Client disconnected")
+    except Exception as e:
+        logger.error(f"Error during WebSocket communication: {e}")
+        await websocket.close()
