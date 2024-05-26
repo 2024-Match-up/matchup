@@ -102,6 +102,7 @@ async def websocket_endpoint(
             logger.info(f"Received coordinates: {coordinates}")
 
             try:
+                exercise.write_exercise(coordinates)
                 metrics = exercise.calculate_metrics(coordinates=coordinates)
                 logger.info(f"Metrics: {metrics}")
                 await websocket.send_json(metrics)

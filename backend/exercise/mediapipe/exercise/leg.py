@@ -1,6 +1,7 @@
 import numpy as np
 import time
 from logger import logger
+import csv
 
 class LegExercise:
     def __init__(self):
@@ -10,6 +11,28 @@ class LegExercise:
         self.rest_start_time = 0
         self.position = None
         self.feedback = None
+    
+    def write_exercise(self, ex_data):
+        fieldnames = set()
+        for key in ex_data:
+            for entry in ex_data[key]:
+                fieldnames.update(entry.keys())
+
+        fieldnames = list(fieldnames)
+
+        # Write data to CSV
+        with open('leg.csv', mode='a', newline='') as file:
+            writer = csv.DictWriter(file, fieldnames=["data"] + fieldnames)
+
+            # Write the header
+            writer.writeheader()
+
+            # Write the data rows
+            for group, entries in ex_data.items():
+                for entry in entries:
+                    row = {"data": group}
+                    row.update(entry)
+                    writer.writerow(row)
 
     def calculate_angle(self, a, b, c):
         a = np.array(a)
@@ -99,3 +122,9 @@ class LegExercise:
             "RIGHT_ANKLE"
         ]
         return coordinates
+
+if __name__ == "__main__":
+    leg = LegExercise()
+    for i in range(10):
+        data = {'coordinates': [{'dx': 553.9432373046875, 'dy': 479.75146484375}, {'dx': 77.97301483154297, 'dy': 565.1355590820312}, {'dx': 780.8120727539062, 'dy': 748.90869140625}, {'dx': 86.8947525024414, 'dy': 874.7332153320312}]}
+        leg.write_exercise(data)

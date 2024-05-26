@@ -1,6 +1,7 @@
 import numpy as np
 import time
 from logger import logger
+import csv
 
 class SquatExercise:
     def __init__(self):
@@ -10,6 +11,28 @@ class SquatExercise:
         self.rest_start_time = 0
         self.position = None
         self.feedback = None
+
+    def write_exercise(self, ex_data):
+        fieldnames = set()
+        for key in ex_data:
+            for entry in ex_data[key]:
+                fieldnames.update(entry.keys())
+
+        fieldnames = list(fieldnames)
+
+        # Write data to CSV
+        with open('leg.csv', mode='a', newline='') as file:
+            writer = csv.DictWriter(file, fieldnames=["data"] + fieldnames)
+
+            # Write the header
+            writer.writeheader()
+
+            # Write the data rows
+            for group, entries in ex_data.items():
+                for entry in entries:
+                    row = {"data": group}
+                    row.update(entry)
+                    writer.writerow(row)
 
     def calculate_angle(self, a, b, c):
         try:
