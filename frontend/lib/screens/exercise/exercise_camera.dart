@@ -26,6 +26,7 @@ class _ExerciseCameraScreenState extends State<ExerciseCameraScreen> {
   List<Pose> _detectedPoses = [];
   String feedback = "";
   int realCount = 0;
+  int sets = 0;
   bool _isWebSocketConnected = false;
 
   @override
@@ -48,11 +49,12 @@ class _ExerciseCameraScreenState extends State<ExerciseCameraScreen> {
       _channel.stream.listen(
         (event) {
           print('WebSocket event: $event');
-          // Parse the event and update feedback and realCount
+          // Parse the event and update feedback, realCount, and sets
           final data = jsonDecode(event);
           setState(() {
             feedback = data['feedback'];
-            realCount = data['real_count'];
+            realCount = data['counter'];
+            sets = data['sets'];
           });
         },
         onError: (error) {
@@ -110,9 +112,9 @@ class _ExerciseCameraScreenState extends State<ExerciseCameraScreen> {
         title: Text('운동 시작하기'),
       ),
       body: _isExercising
-          ? Column(
+          ? Stack(
               children: [
-                Expanded(
+                Positioned.fill(
                   child: PoseDetectorView(
                     onPosesDetected: (poses) {
                       setState(() {
@@ -121,13 +123,31 @@ class _ExerciseCameraScreenState extends State<ExerciseCameraScreen> {
                     },
                   ),
                 ),
-                Text(
-                  'Feedback: $feedback',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                Positioned(
+                  top: 16,
+                  left: 16,
+                  child: Text(
+                    'Count: $realCount',
+                    style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: Colors.black),
+                  ),
                 ),
-                Text(
-                  'Count: $realCount',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                Positioned(
+                  top: 16,
+                  right: 16,
+                  child: Text(
+                    'Sets: $sets',
+                    style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: Colors.black),
+                  ),
+                ),
+                Positioned(
+                  bottom: 16,
+                  left: 16,
+                  right: 16,
+                  child: Text(
+                    'Feedback: $feedback',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold, color: Colors.black),
+                  ),
                 ),
               ],
             )
@@ -169,7 +189,6 @@ class _ExerciseCameraScreenState extends State<ExerciseCameraScreen> {
       }
     });
   }
-  
 
   dynamic customEncode(dynamic item) {
     if (item is Offset) {
