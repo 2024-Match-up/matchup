@@ -23,7 +23,7 @@ class NeckExercise:
         fieldnames = list(fieldnames)
 
         # Write data to CSV
-        with open('leg.csv', mode='a', newline='') as file:
+        with open('neck.csv', mode='a', newline='') as file:
             writer = csv.DictWriter(file, fieldnames=["data"] + fieldnames)
 
             # Write the header

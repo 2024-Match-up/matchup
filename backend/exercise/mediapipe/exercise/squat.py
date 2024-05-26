@@ -21,7 +21,7 @@ class SquatExercise:
         fieldnames = list(fieldnames)
 
         # Write data to CSV
-        with open('leg.csv', mode='a', newline='') as file:
+        with open('squat.csv', mode='a', newline='') as file:
             writer = csv.DictWriter(file, fieldnames=["data"] + fieldnames)
 
             # Write the header
