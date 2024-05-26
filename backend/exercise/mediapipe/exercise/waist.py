@@ -90,11 +90,11 @@ class WaistExercise:
                 self.last_position = "Rest"
 
             if hor_shoulder_angle < 40 and hor_shoulder_angle >= 30:
-                self.feedback = "It's too low"
+                self.feedback = "어깨가 너무 낮습니다."
             elif hor_shoulder_angle >= 40 and hor_shoulder_angle < 55:
-                self.feedback = "Normal"
+                self.feedback = "자세가 좋습니다."
             elif hor_shoulder_angle > 55:
-                self.feedback = "Good"
+                self.feedback = "어깨가 너무 높습니다."
 
             return {
                 'counter': self.counter,

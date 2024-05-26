@@ -49,11 +49,11 @@ class _ExerciseCameraScreenState extends State<ExerciseCameraScreen> {
         (event) {
           print('WebSocket event: $event');
           // Parse the event and update feedback and realCount
-          // final data = jsonDecode(event);
-          // setState(() {
-          //   feedback = data['feedback'];
-          //   realCount = data['real_count'];
-          // });
+          final data = jsonDecode(event);
+          setState(() {
+            feedback = data['feedback'];
+            realCount = data['real_count'];
+          });
         },
         onError: (error) {
           print('WebSocket error: $error');
@@ -77,7 +77,7 @@ class _ExerciseCameraScreenState extends State<ExerciseCameraScreen> {
       print('WebSocket connection failed: $e');
     }
 
-    _timer = Timer.periodic(Duration(seconds: 1), (Timer timer) {
+    _timer = Timer.periodic(Duration(milliseconds: 100), (Timer timer) {
       if (_remainingTime > 0) {
         setState(() {
           _remainingTime--;
