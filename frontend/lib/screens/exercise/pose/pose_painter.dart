@@ -114,6 +114,50 @@ class PosePainter extends CustomPainter {
     return coordinates;
   }
 
+  // 스쿼트 운동(골반 운동)을 위한 좌표 반환 함수
+  static List<Offset> getSquatCoordinates(List<Pose> poses) {
+    final List<Offset> coordinates = [];
+    for (final pose in poses) {
+      coordinates.add(
+        Offset(
+          pose.landmarks[PoseLandmarkType.leftHip]!.x,
+          pose.landmarks[PoseLandmarkType.leftHip]!.y,
+        ),
+      );
+      coordinates.add(
+        Offset(
+          pose.landmarks[PoseLandmarkType.rightHip]!.x,
+          pose.landmarks[PoseLandmarkType.rightHip]!.y,
+        ),
+      );
+      coordinates.add(
+        Offset(
+          pose.landmarks[PoseLandmarkType.leftKnee]!.x,
+          pose.landmarks[PoseLandmarkType.leftKnee]!.y,
+        ),
+      );
+      coordinates.add(
+        Offset(
+          pose.landmarks[PoseLandmarkType.rightKnee]!.x,
+          pose.landmarks[PoseLandmarkType.rightKnee]!.y,
+        ),
+      );
+      coordinates.add(
+        Offset(
+          pose.landmarks[PoseLandmarkType.leftAnkle]!.x,
+          pose.landmarks[PoseLandmarkType.leftAnkle]!.y,
+        ),
+      );
+      coordinates.add(
+        Offset(
+          pose.landmarks[PoseLandmarkType.rightAnkle]!.x,
+          pose.landmarks[PoseLandmarkType.rightAnkle]!.y,
+        ),
+      );
+    }
+    return coordinates;
+  }
+
   @override
   bool shouldRepaint(covariant PosePainter oldDelegate) {
     return oldDelegate.absoluteImageSize != absoluteImageSize ||

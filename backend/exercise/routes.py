@@ -13,6 +13,7 @@ from user.crud import authenticate_access_token, get_user
 from datetime import datetime, timezone
 import pytz # 한국 시간대로 설졍
 from exercise.mediapipe.exercise.waist import WaistExercise
+from exercise.mediapipe.exercise.squart import SquatExercise
 
 # 한국 시간대
 kst = pytz.timezone('Asia/Seoul')
@@ -75,9 +76,8 @@ async def websocket_endpoint(
 
         if exercise_id == 4:
             exercise = WaistExercise()
-        # 다른 운동 로직도 여기에 추가
-        # elif exercise_id == 1:
-        #    exercise = NeckExercise()
+        elif exercise_id == 2:
+            exercise = SquatExercise()  # 스쿼트 운동을 위한 클래스 인스턴스 생성
         else:
             await websocket.send_text("Invalid exercise ID")
             await websocket.close()
@@ -95,21 +95,14 @@ async def websocket_endpoint(
             coordinates = json.loads(data)
             logger.info(f"Received coordinates: {coordinates}")
 
-            if exercise_id == 4:
-                try:
-                    metrics = exercise.calculate_metrics(coordinates=coordinates)
-                    logger.info(f"Metrics: {metrics}")
-                    await websocket.send_json(metrics)
-                    logger.info(f"Sent metrics: {metrics}")
-                except Exception as e:
-                    logger.error(f"Error calculating metrics: {e}")
-                    await websocket.send_json({'error': str(e)})
-            # elif exercise_id == 1:
-            #    metrics = exercise.calculate_metrics(coordinates)
-            #    await websocket.send_json(metrics)
-            # else:
-            #    metrics = {'error': 'Invalid exercise_id'}
-            #    await websocket.send_json(metrics)
+            try:
+                metrics = exercise.calculate_metrics(coordinates=coordinates)
+                logger.info(f"Metrics: {metrics}")
+                await websocket.send_json(metrics)
+                logger.info(f"Sent metrics: {metrics}")
+            except Exception as e:
+                logger.error(f"Error calculating metrics: {e}")
+                await websocket.send_json({'error': str(e)})
 
     except WebSocketDisconnect:
         logger.info("Client disconnected")
