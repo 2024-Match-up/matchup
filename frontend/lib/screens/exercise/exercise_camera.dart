@@ -199,13 +199,13 @@ class _ExerciseCameraScreenState extends State<ExerciseCameraScreen> {
         List<Offset> coordinates = [];
         switch (widget.exerciseId) {
           case 1:
-            // coordinates = PosePainter.getNeckCoordinates(_detectedPoses);
+            coordinates = PosePainter.getNeckCoordinates(_detectedPoses);
             break;
           case 2:
             coordinates = PosePainter.getSquatCoordinates(_detectedPoses);
             break;
           case 3:
-            // coordinates = PosePainter.getLegCoordinates(_detectedPoses);
+            coordinates = PosePainter.getLegCoordinates(_detectedPoses);
             break;
           case 4:
             coordinates = PosePainter.getWaistCoordinates(_detectedPoses);
