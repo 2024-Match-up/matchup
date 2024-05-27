@@ -42,10 +42,10 @@ class Exercise(Base):
     __tablename__ = "exercise"
 
     id = Column(Integer, primary_key=True)
-    count = Column(Integer)
+    count = Column(Integer) # 권장되는 카운트
     time = Column(Integer)
     name = Column(String(20))
-    set = Column(Integer)
+    set = Column(Integer) # 권장되는 세트
     coordinate_list = Column(JSON)  # 좌표 리스트 
     
     sessions = relationship("Session", backref="exercise")
