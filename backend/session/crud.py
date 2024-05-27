@@ -1,4 +1,3 @@
-
 from sqlalchemy.orm import Session
 import models
 from models import Session
@@ -10,3 +9,9 @@ def create_session(db: Session, user_id: int, exercise_id: int, date: datetime):
     db.commit()
     db.refresh(new_session)
     return new_session
+
+
+def get_sessions_by_user_id(db: Session, user_id: int):
+    return db.query(models.Session).filter(models.Session.user_id == user_id).all()
+
+
