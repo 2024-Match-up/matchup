@@ -10,7 +10,7 @@ class SessionBase(BaseModel):
     
 class ReturnSession(BaseModel):
     date: datetime
-    exercise: int
+    exercise: str
 
 class SessionCreate(SessionBase):
     pass

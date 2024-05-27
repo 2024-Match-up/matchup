@@ -37,10 +37,21 @@ def read_sessions(
     
     session_list = []
     
+    
+    
     for session in sessions:
+        if(session.exercise_id == 1):
+            return_exercise = "목 스트레칭"
+        elif(session.exercise_id == 2):
+            return_exercise = "골반 운동 : 스쿼트"
+        elif(session.exercise_id == 3):
+            return_exercise = "다리 운동 : 런지"
+        elif(session.exercise_id == 4):
+            return_exercise = "허리 스트레칭"
+        
         session_list.append({
             "date": session.date,
-            "exercise": session.exercise_id,
+            "exercise": return_exercise,
         })
     
     
