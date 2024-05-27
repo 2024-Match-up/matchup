@@ -12,12 +12,12 @@ class ReturnSession(BaseModel):
     date: datetime
     exercise: str
 
-class SessionCreate(SessionBase):
-    pass
+# class SessionCreate(SessionBase):
+#     pass
 
-class Session(SessionBase):
-    id: int
-    exercise: Exercise
+# class Session(SessionBase):
+#     id: int
+#     exercise: Exercise
 
-    class Config:
-        orm_mode = True
+#     class Config:
+#         orm_mode = True

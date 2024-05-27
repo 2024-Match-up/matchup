@@ -1,5 +1,9 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:provider/provider.dart';
+import 'package:matchup/models/UserProvider.dart';
+import 'package:http/http.dart' as http;
 
 class CalendarScreen extends StatefulWidget {
   @override
@@ -16,11 +20,36 @@ class _CalendarScreenState extends State<CalendarScreen> {
     super.initState();
     _focusedDay = DateTime.now();
     _selectedDay = DateTime.now();
-    _selectedDayExercises = _fetchExercisesForDay(_selectedDay);
+    _fetchExercisesForDay(_selectedDay);
   }
 
-  List<String> _fetchExercisesForDay(DateTime day) {
-    return ['풀업', '딥스', '스쿼트']; 
+  Future<void> _fetchExercisesForDay(DateTime day) async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    String? accessToken = userProvider.accessToken;
+    final String baseUrl = 'http://172.30.1.1:8000/api/v1';
+
+    final response = await http.get(
+      Uri.parse('$baseUrl/session?date=${day.toIso8601String().split('T')[0]}'),
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/json; charset=utf-8',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      List<dynamic> exercises = json.decode(utf8.decode(response.bodyBytes));
+      setState(() {
+        _selectedDayExercises = exercises
+            .where((exercise) => DateTime.parse(exercise['date']).toLocal().toIso8601String().split('T')[0] == day.toIso8601String().split('T')[0])
+            .map((exercise) => exercise['exercise'].toString())
+            .toList();
+      });
+    } else {
+      setState(() {
+        _selectedDayExercises = [];
+      });
+      throw Exception('Failed to load exercises');
+    }
   }
 
   @override
@@ -32,11 +61,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
       body: Column(
         children: <Widget>[
           Card(
-            margin: EdgeInsets.all(screenWidth * 0.02), 
+            margin: EdgeInsets.all(screenWidth * 0.02),
             child: TableCalendar(
               headerStyle: HeaderStyle(
-                formatButtonVisible: false, 
-                titleCentered: true, 
+                formatButtonVisible: false,
+                titleCentered: true,
               ),
               locale: 'ko_KR',
               focusedDay: _focusedDay,
@@ -49,14 +78,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 setState(() {
                   _selectedDay = selectedDay;
                   _focusedDay = focusedDay;
-                  _selectedDayExercises = _fetchExercisesForDay(selectedDay);
                 });
+                _fetchExercisesForDay(selectedDay);
               },
             ),
           ),
           Expanded(
             child: Card(
-              margin: EdgeInsets.all(screenWidth * 0.02), 
+              margin: EdgeInsets.all(screenWidth * 0.02),
               child: ListView.builder(
                 itemCount: _selectedDayExercises.length,
                 itemBuilder: (context, index) {

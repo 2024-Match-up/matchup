@@ -6,7 +6,7 @@ import logging
 from database import get_current_user
 from health.routes import get_auth_header
 from auth import AuthJWT
-from crud import get_sessions_by_user_id
+from session.crud import get_sessions_by_user_id
 from fastapi.security import HTTPBearer,HTTPAuthorizationCredentials
 from typing import List
 

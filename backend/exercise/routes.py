@@ -6,7 +6,7 @@ from logger import logger
 import json
 import asyncio
 from session.crud import create_session
-from session.schemas import Session
+from models import Session 
 from database import get_db
 from auth import AuthJWT
 from user.crud import authenticate_access_token, get_user

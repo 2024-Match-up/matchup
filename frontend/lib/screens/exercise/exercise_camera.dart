@@ -35,7 +35,7 @@ class _ExerciseCameraScreenState extends State<ExerciseCameraScreen> {
 
     try {
       _channel = WebSocketChannel.connect(
-        Uri.parse('ws://172.30.1.72:8000/api/v1/exercise/ws'),
+        Uri.parse('ws://172.30.1.1:8000/api/v1/exercise/ws'),
       );
 
       final userProvider = Provider.of<UserProvider>(context, listen: false);
