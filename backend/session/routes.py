@@ -8,6 +8,7 @@ from health.routes import get_auth_header
 from auth import AuthJWT
 from crud import get_sessions_by_user_id
 from fastapi.security import HTTPBearer,HTTPAuthorizationCredentials
+from typing import List
 
 security = HTTPBearer()
 
@@ -22,7 +23,7 @@ router = APIRouter(
 """
 유저별 특정날에 어떤 운동을 했는지 조회
 """
-@router.get("/", summary="세션 정보 조회", response_model=List[schemas.Session])
+@router.get("/", summary="세션 정보 조회", response_model=List[schemas.ReturnSession])
 def read_sessions(
     accessToken:str =Depends(get_auth_header), 
     db: Session = Depends(get_db)
@@ -38,8 +39,8 @@ def read_sessions(
     
     for session in sessions:
         session_list.append({
-            "exercise_id": session.exercise_id,
-            "date": session.date
+            "date": session.date,
+            "exercise": session.exercise_id,
         })
     
     

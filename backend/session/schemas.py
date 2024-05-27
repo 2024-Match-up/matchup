@@ -7,6 +7,10 @@ class SessionBase(BaseModel):
     exercise_id: int
     user_id: int
     date: datetime
+    
+class ReturnSession(BaseModel):
+    date: datetime
+    exercise: int
 
 class SessionCreate(SessionBase):
     pass
