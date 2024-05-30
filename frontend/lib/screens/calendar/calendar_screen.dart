@@ -19,8 +19,33 @@ class _CalendarScreenState extends State<CalendarScreen> {
     _selectedDayExercises = _fetchExercisesForDay(_selectedDay);
   }
 
-  List<String> _fetchExercisesForDay(DateTime day) {
-    return ['풀업', '딥스', '스쿼트']; 
+  Future<void> _fetchExercisesForDay(DateTime day) async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    String? accessToken = userProvider.accessToken;
+    final String baseUrl = 'http://10.254.2.109:8000/api/v1';
+
+    final response = await http.get(
+      Uri.parse('$baseUrl/session?date=${day.toIso8601String().split('T')[0]}'),
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/json; charset=utf-8',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      List<dynamic> exercises = json.decode(utf8.decode(response.bodyBytes));
+      setState(() {
+        _selectedDayExercises = exercises
+            .where((exercise) => DateTime.parse(exercise['date']).toLocal().toIso8601String().split('T')[0] == day.toIso8601String().split('T')[0])
+            .map((exercise) => exercise['exercise'].toString())
+            .toList();
+      });
+    } else {
+      setState(() {
+        _selectedDayExercises = [];
+      });
+      throw Exception('Failed to load exercises');
+    }
   }
 
   @override
