@@ -116,3 +116,4 @@ async def websocket_endpoint(
     except Exception as e:
         logger.error(f"Error during WebSocket communication: {e}")
         await websocket.close()
+  
