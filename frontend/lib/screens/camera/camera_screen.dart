@@ -5,7 +5,9 @@ import 'body_scan.dart';
 import 'gallery_screen.dart';
 import 'package:matchup/models/UserProvider.dart';
 
-final String baseUrl = 'http://10.254.2.109:8000/api/v1';
+
+final String baseUrl = 'http://172.30.1.1:8000/api/v1';
+
 
 class CameraScreen extends StatelessWidget {
   Future<void> sendGetRequest(BuildContext context) async {

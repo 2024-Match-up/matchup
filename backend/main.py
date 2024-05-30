@@ -16,6 +16,7 @@ import boto3
 from user import routes as user_routes
 from exercise import routes as exercise_routes
 from health import routes as health_routes
+from session import routes as session_routes
 
 dotenv.load_dotenv()
 
@@ -24,6 +25,7 @@ router = APIRouter(prefix="/api/v1")
 app.include_router(health_routes.router)
 app.include_router(user_routes.router)
 app.include_router(exercise_routes.router)
+app.include_router(session_routes.router)
 
 client_s3 = boto3.client(
     's3',

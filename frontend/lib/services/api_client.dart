@@ -2,7 +2,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class ApiClient {
-  final String baseUrl = 'http://10.254.2.109:8000/api/v1';
+  final String baseUrl = 'http://172.30.1.1:8000/api/v1';
+
   
 
 

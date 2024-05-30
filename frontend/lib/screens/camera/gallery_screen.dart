@@ -21,7 +21,9 @@ class _GalleryScreenState extends State<GalleryScreen> {
   }
 
   Future<void> fetchImages() async {
-    final String baseUrl = 'http://10.254.2.109:8000/api/v1';
+
+    final String baseUrl = 'http://172.30.1.1:8000/api/v1';
+
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     final token = userProvider.accessToken;
 
