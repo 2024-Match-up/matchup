@@ -7,6 +7,8 @@ import 'pose/pose_detector_view.dart';
 import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart';
 import 'package:matchup/models/UserProvider.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_tts/flutter_tts.dart';
+import 'dart:collection'; // 큐 사용을 위해 추가
 
 class ExerciseCameraScreen extends StatefulWidget {
   final int exerciseId;
@@ -20,7 +22,7 @@ class ExerciseCameraScreen extends StatefulWidget {
 class _ExerciseCameraScreenState extends State<ExerciseCameraScreen> {
   late Timer _timer;
   late Timer _coordinateTimer;
-  int _remainingTime = 10;
+  int _remainingTime = 10;  // 10초 타이머 설정
   bool _isExercising = false;
   late WebSocketChannel _channel;
   List<Pose> _detectedPoses = [];
@@ -29,9 +31,26 @@ class _ExerciseCameraScreenState extends State<ExerciseCameraScreen> {
   int sets = 0;
   bool _isWebSocketConnected = false;
 
+  FlutterTts flutterTts = FlutterTts();
+  Queue<String> ttsQueue = Queue<String>();
+  String lastSpokenFeedback = "";
+  bool isSpeaking = false;
+
   @override
   void initState() {
     super.initState();
+
+    flutterTts.setLanguage('ko-KR'); // TTS 언어 설정
+    flutterTts.setSpeechRate(0.5); // 말하는 속도 설정
+
+    flutterTts.setCompletionHandler(() {
+      setState(() {
+        isSpeaking = false;
+        if (ttsQueue.isNotEmpty) {
+          _speak();
+        }
+      });
+    });
 
     try {
       _channel = WebSocketChannel.connect(
@@ -45,16 +64,20 @@ class _ExerciseCameraScreenState extends State<ExerciseCameraScreen> {
         "access_token": accessToken,
       }));
 
-      // Listen to WebSocket stream
       _channel.stream.listen(
         (event) {
           print('WebSocket event: $event');
-          // Parse the event and update feedback, realCount, and sets
           final data = jsonDecode(event);
           setState(() {
             feedback = data['feedback'];
             realCount = data['counter'];
             sets = data['sets'];
+            if (feedback.isNotEmpty && feedback != lastSpokenFeedback && !ttsQueue.contains(feedback)) {
+              ttsQueue.add(feedback);
+              if (!isSpeaking) {
+                _speak();
+              }
+            }
           });
         },
         onError: (error) {
@@ -79,7 +102,7 @@ class _ExerciseCameraScreenState extends State<ExerciseCameraScreen> {
       print('WebSocket connection failed: $e');
     }
 
-    _timer = Timer.periodic(Duration(milliseconds: 100), (Timer timer) {
+    _timer = Timer.periodic(Duration(seconds: 1), (Timer timer) {
       if (_remainingTime > 0) {
         setState(() {
           _remainingTime--;
@@ -88,11 +111,21 @@ class _ExerciseCameraScreenState extends State<ExerciseCameraScreen> {
         setState(() {
           _isExercising = true;
           _timer.cancel();
-          // Send coordinates periodically
           _sendCoordinatesPeriodically();
         });
       }
     });
+  }
+
+  Future<void> _speak() async {
+    if (ttsQueue.isNotEmpty) {
+      String message = ttsQueue.removeFirst();
+      setState(() {
+        isSpeaking = true;
+        lastSpokenFeedback = message;
+      });
+      await flutterTts.speak(message);
+    }
   }
 
   @override
@@ -166,13 +199,13 @@ class _ExerciseCameraScreenState extends State<ExerciseCameraScreen> {
         List<Offset> coordinates = [];
         switch (widget.exerciseId) {
           case 1:
-            // coordinates = PosePainter.getNeckCoordinates(_detectedPoses);
+            coordinates = PosePainter.getNeckCoordinates(_detectedPoses);
             break;
           case 2:
-            // coordinates = PosePainter.getPelvisCoordinates(_detectedPoses);
+            coordinates = PosePainter.getSquatCoordinates(_detectedPoses);
             break;
           case 3:
-            // coordinates = PosePainter.getLegCoordinates(_detectedPoses);
+            coordinates = PosePainter.getLegCoordinates(_detectedPoses);
             break;
           case 4:
             coordinates = PosePainter.getWaistCoordinates(_detectedPoses);
