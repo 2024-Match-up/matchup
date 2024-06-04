@@ -166,3 +166,8 @@ def update_user_profile(db, email: str, profile_data: UserProfileUpdate) -> bool
         print(e)
         return False
 
+def get_user_id_by_username(db, username: str) -> int:
+    user = db.query(User).filter(User.nickname == username).first()
+    if user:
+        return user.id
+    return False

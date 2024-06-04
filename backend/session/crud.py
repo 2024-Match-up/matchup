@@ -15,3 +15,5 @@ def get_sessions_by_user_id(db: Session, user_id: int):
     return db.query(models.Session).filter(models.Session.user_id == user_id).all()
 
 
+def get_latest_session_by_user_and_exercise(db: Session, user_id: int, exercise_id: int):
+    return db.query(models.Session).filter(models.Session.user_id == user_id, models.Session.exercise_id == exercise_id).order_by(models.Session.date.desc()).first()

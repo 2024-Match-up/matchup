@@ -2,6 +2,7 @@ import numpy as np
 import time
 from logger import logger
 import csv
+import datetime
 
 class SquatExercise:
     def __init__(self):
@@ -29,8 +30,10 @@ class SquatExercise:
 
             # Write the data rows
             for group, entries in ex_data.items():
+                # writer.writerow(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
                 for entry in entries:
-                    row = {"data": group}
+                    # row = {"data": group}
+                    row = {"data": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
                     row.update(entry)
                     writer.writerow(row)
 

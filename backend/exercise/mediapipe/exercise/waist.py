@@ -2,6 +2,9 @@ import numpy as np
 import time
 from logger import logger
 import csv
+import pytz
+
+kst = pytz.timezone('Asia/Seoul')
 
 class WaistExercise:
     def __init__(self):
