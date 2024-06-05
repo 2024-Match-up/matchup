@@ -228,24 +228,26 @@ async def websocket_endpoint(
             metrics = exercise.calculate_metrics(coordinates=coordinates)
             
             hw_count = int(rc.get(f"{session_id}_hw_count")) if rc.get(f"{session_id}_hw_count") is not None else 0
-            
-            prev = int(rc.get(f"{session_id}_mp_count")) if rc.get(f"{session_id}_mp_count") is not None else 0
+            hw_set = int(rc.get(f"{session_id}_hw_set")) if rc.get(f"{session_id}_hw_set") is not None else 0
+            prev_cnt = int(rc.get(f"{session_id}_mp_count")) if rc.get(f"{session_id}_mp_count") is not None else 0
+            prev_set = int(rc.get(f"{session_id}_mp_set")) if rc.get(f"{session_id}_mp_set") is not None else 0
             
             cur_cnt = metrics.get('counter')
             cur_set = metrics.get('sets')
             
-            if cur_cnt != prev:
+            if cur_set != prev_set:
+                ## 하드웨어 세트와 미디어 파이프 세트 비교
+                rc.set(f"{session_id}_mp_set",cur_set)
+                result_set = max(cur_set, prev_set)
+            
+            if cur_cnt != prev_cnt:
                 ## 하드웨어 카운트와 미디어 파이프 카운트 비교
                 rc.set(f"{session_id}_mp_count", cur_cnt)
                 result_cnt = max(hw_count, cur_cnt)
-                
-                ## 하드웨어 세트와 미디어 파이프 세트 비교
-                rc.set(f"{session_id}_mp_set",cur_set)
-                result_set = max(cur_set, result_set)
-                
-                ## 최종 카운트와 세트 저장
-                rc.set(f"{session_id}_real_count", result_cnt)
-                rc.set(f"{session_id}_real_set", result_set)
+            
+            ## 최종 카운트와 세트 저장
+            rc.set(f"{session_id}_real_count", result_cnt)
+            rc.set(f"{session_id}_real_set", result_set)
             
             ## 비교 후 최종 카운트와 세트 전송
             metrics.update({'counter': result_cnt})
