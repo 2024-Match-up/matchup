@@ -6,6 +6,7 @@ import 'exercise/exercise_screen.dart';
 import 'calendar/calendar_screen.dart';
 import 'camera/camera_screen.dart';
 import 'record/record_screen.dart';
+import 'grade/grade_screen.dart';
 
 class BottomNavBar extends StatefulWidget {
   final String accessToken;
@@ -25,6 +26,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
     CalendarScreen(),  // 달력 페이지
     CameraScreen(),    // 카메라 페이지
     RecordScreen(),    // 측정기록 페이지
+    GradeScreen() // 랭킹 페이지
   ];
 
   @override
@@ -94,6 +96,10 @@ class _BottomNavBarState extends State<BottomNavBar> {
             BottomNavigationBarItem(
               icon: Icon(Icons.timeline, size: screenWidth * 0.07),
               label: '그래프',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.emoji_events, size: screenWidth * 0.07),
+              label: '랭킹',
             ),
           ],
           currentIndex: _selectedIndex,
