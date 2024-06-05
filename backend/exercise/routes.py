@@ -155,6 +155,7 @@ router = APIRouter(
 async def get():
     return HTMLResponse(html)
 
+## Hardware 전용
 @router.get("/{exercise_id}/{nickname}")
 async def get_session_id(exercise_id: int, nickname: str, db : Session = Depends(get_db)):
     userId = get_user_id_by_username(db, nickname)
@@ -171,21 +172,16 @@ async def get_session_id(exercise_id: int, nickname: str, db : Session = Depends
 @router.get("/count/{session_id}/{count}")
 async def get_counts(session_id: int, count: int):
     rc.set(f"{session_id}_hw_count" , count)
-    temp_count = int(rc.get(f"{session_id}_hw_count"))
-    print(type(temp_count))
-    temp_set = rc.get(f"{session_id}_hw_set")
-    if temp_set is None:
-        temp_set = 0
-    else:
-        temp_set = int(temp_set)
-    if temp_count < 10:
+    hw_set = int(rc.get(f"{session_id}_hw_set")) if rc.get(f"{session_id}_hw_set") is not None else 0
+
+    if count < 10:
         return "keep"
-    elif temp_count >= 10 and temp_set < 2 :
-        temp_set += 1
-        rc.set(f"{session_id}_hw_set", temp_set)
+    elif count >= 10 and hw_set < 2 :
+        hw_set += 1
+        rc.set(f"{session_id}_hw_set", hw_set)
         return "set"
     else:
-        if temp_set == 2 :
+        if hw_set == 2 :
             return "end"
     return {session_id, count}
 
@@ -194,14 +190,8 @@ async def websocket_endpoint(websocket: WebSocket):
     logger.info("test1")
     await websocket.accept()
 
-async def keep_websocket_alive(websocket: WebSocket):
-    while True:
-        await asyncio.sleep(10)
-        try:
-            await websocket.send_text("ping")
-        except Exception as e:
-            print("WebSocket connection error:", e)
 
+## 미디어 파이프 전용
 @router.websocket("/ws")
 async def websocket_endpoint(
     websocket: WebSocket,
@@ -228,24 +218,49 @@ async def websocket_endpoint(
         await websocket.send_text(f"Session created for exercise ID: {exercise_id}, Session ID: {session_id}")
         
         exercise = create_exercise_instance(exercise_id)
-
+        
         while True:
             data = await websocket.receive_text()
             coordinates = json.loads(data)
-            hw_count = int(rc.get(f"{session_id}_hw_count") or 0)
-            mp_count = int(rc.get(f"{session_id}_mp_count") or 0)
+            
             
             exercise.write_exercise(coordinates)
             metrics = exercise.calculate_metrics(coordinates=coordinates)
-            real_count = max(hw_count, mp_count) 
             
-            if hw_count > 0 or mp_count > 0:
-                real_count += 1
-                rc.set(f"{session_id}_real_count", real_count)
-                rc.set(f"{session_id}_hw_count", 0) 
-                rc.set(f"{session_id}_mp_count", 0)  
+            hw_count = int(rc.get(f"{session_id}_hw_count")) if rc.get(f"{session_id}_hw_count") is not None else 0
             
-            metrics.update({'real_count': real_count})
+            prev = int(rc.get(f"{session_id}_mp_count")) if rc.get(f"{session_id}_mp_count") is not None else 0
+            
+            cur_cnt = metrics.get('counter')
+            cur_set = metrics.get('sets')
+            
+            if cur_cnt != prev:
+                ## 하드웨어 카운트와 미디어 파이프 카운트 비교
+                rc.set(f"{session_id}_mp_count", cur_cnt)
+                result_cnt = max(hw_count, cur_cnt)
+                
+                ## 하드웨어 세트와 미디어 파이프 세트 비교
+                rc.set(f"{session_id}_mp_set",cur_set)
+                result_set = max(cur_set, result_set)
+                
+                ## 최종 카운트와 세트 저장
+                rc.set(f"{session_id}_real_count", result_cnt)
+                rc.set(f"{session_id}_real_set", result_set)
+            
+            ## 비교 후 최종 카운트와 세트 전송
+            metrics.update({'counter': result_cnt})
+            metrics.update({'sets': result_set})
+            
+            ## !!!!!!!!!!!이슈 발생!!!!!!!!!!!!
+            ## 하드웨어 : 9 -> 10 -> 0
+            ## 미디어파이프 : 8 -> 9 -> 10
+            ## 동기화 이슈 발생
+            
+            ## !!!!!!!!!!!해결 방안!!!!!!!!!!!!
+            ## 하드웨어에서 10이 되면 미디어 파이프에 10을 전송
+            ## 미디어 파이프에서 10이 되면 하드웨어에 10을 전송
+            ## 둘 중 하나가 10이 되면 0으로 초기화
+            
             await websocket.send_json(metrics)
 
     except WebSocketDisconnect:
@@ -258,10 +273,18 @@ def create_exercise_instance(exercise_id):
     if exercise_id == 1:
         return NeckExercise()
     elif exercise_id == 2:
-        return SquatExercise() 
+        return SquatExercise()
     elif exercise_id == 3:
         return LegExercise()
     elif exercise_id == 4:
         return WaistExercise()
     else:
         raise ValueError("Invalid exercise ID")
+
+async def keep_websocket_alive(websocket: WebSocket):
+    while True:
+        await asyncio.sleep(10)
+        try:
+            await websocket.send_text("ping")
+        except Exception as e:
+            print("WebSocket connection error:", e)
