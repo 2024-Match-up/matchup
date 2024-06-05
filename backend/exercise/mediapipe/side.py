@@ -1,30 +1,45 @@
+import cv2
 import mediapipe as mp
 import numpy as np
-import cv2
+import math as m
 
-mp_drawing = mp.solutions.drawing_utils
-mp_pose = mp.solutions.pose
+# 수직 기준 각도 계산 함수
+def Angle(landmark1, landmark2):
+    a = np.array(landmark1)
+    b = np.array(landmark2)
+    c = (a[0], a[1] - 100)
 
-def setha_angle(landmark1, landmark2):
-    """Calculate angle between two points."""
-    a = np.array(landmark1)  # First point
-    b = np.array(landmark2)  # Second point
+    # 벡터 BA와 BC를 계산합니다.
+    BA = (a[0] - b[0], a[1] - b[1])
+    BC = (c[0] - b[0], c[1] - b[1])
 
-    radians = np.arctan2(abs(a[0] - b[0]), abs(a[1] - b[1]))
-    angle = np.abs(radians * 180.0 / np.pi)
+    # 벡터 BA와 BC의 내적을 계산합니다.
+    dot_product = BA[0] * BC[0] + BA[1] * BC[1]
 
-    return angle
+    # 벡터 BA와 BC의 크기를 계산합니다.
+    magnitude_BA = m.sqrt(BA[0] ** 2 + BA[1] ** 2)
+    magnitude_BC = m.sqrt(BC[0] ** 2 + BC[1] ** 2)
 
-def calculate_neck_score(left_shoulder_setha):
+    # 두 벡터의 내적과 크기를 이용하여 라디안 각도를 계산합니다.
+    angle_radians = m.acos(dot_product / (magnitude_BA * magnitude_BC))
+    # 라디안 각도를 도로 변환하여 반환합니다.
+    angle_degrees = angle_radians * (180 / m.pi)
+    return angle_degrees
+
+# 목 점수 계산 함수
+def calculate_neck_score(neck_inclination):
     """Return score based on neck angle."""
-    if left_shoulder_setha > 45:
-        return 0
-    # elif left_shoulder_setha < 20:
-    #     return 0
-    elif 20 <= left_shoulder_setha < 35:
-        return 100
-    elif 35 <= left_shoulder_setha < 45:
-        return 50
+    if neck_inclination < 40:
+        score = int(80 - (neck_inclination / 40 * 80) + 20)
+        position = "Good"
+    else:
+        score = 20
+        position = "Bad"
+    return score, position
+
+# mediapipe 자세 클래스 초기화
+mp_pose = mp.solutions.pose
+pose = mp_pose.Pose(static_image_mode=True, min_detection_confidence=0.5, min_tracking_confidence=0.5)
 
 def analyze_neck_angle(image_path):
     """Analyze neck angle from an image file and return the score."""
@@ -36,57 +51,41 @@ def analyze_neck_angle(image_path):
     
     image = cv2.resize(image, (640, 480))
 
-    with mp_pose.Pose(static_image_mode=True, min_detection_confidence=0.3, min_tracking_confidence=0.3) as pose:
+    image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    results = pose.process(image_rgb)
+    
+    if results.pose_landmarks:
+        landmarks = results.pose_landmarks.landmark
+        h, w = image.shape[:2]
 
-        image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        
+        left_shoulder = (int(landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER].x * w),
+                         int(landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER].y * h))
 
-        results = pose.process(image_rgb)
-        
-        if results.pose_landmarks:
-            landmarks = results.pose_landmarks.landmark
+        left_ear = (int(landmarks[mp_pose.PoseLandmark.LEFT_EAR].x * w),
+                    int(landmarks[mp_pose.PoseLandmark.LEFT_EAR].y * h))
 
-            nose = [landmarks[mp_pose.PoseLandmark.NOSE.value].x,
-                    landmarks[mp_pose.PoseLandmark.NOSE.value].y]
+        neck_inclination = Angle(left_shoulder, left_ear)
 
-            left_shoulder = [landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].x,
-                            landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].y]
-            right_shoulder = [landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].x,
-                            landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].y]
+        print(f"Neck Inclination Angle: {neck_inclination:.1f} degrees")
 
-            left_shoulder_setha = setha_angle(nose, left_shoulder)
-            right_shoulder_setha = setha_angle(nose, right_shoulder)
+        score_neck, position = calculate_neck_score(neck_inclination)
+    else:
+        print("No pose landmarks detected")
+        return None
 
-            print(f"Left Shoulder Angle: {left_shoulder_setha:.1f} degrees")
-            print(f"Right Shoulder Angle: {right_shoulder_setha:.1f} degrees")
-
-            score_neck = calculate_neck_score(left_shoulder_setha)
-
-            """
-            # 없어도 되는 코드(확인용)
-            cv2.putText(image, f"Neck Angle: {left_shoulder_setha:.1f} degrees",
-                        (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
-            cv2.putText(image, f"Neck Score: {score_neck}",
-                        (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
-            mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS,
-                                    mp_drawing.DrawingSpec(color=(245, 117, 66), thickness=2, circle_radius=2),
-                                    mp_drawing.DrawingSpec(color=(245, 66, 230), thickness=2, circle_radius=2))
-            cv2.imshow('Mediapipe Image Analysis', image)
-            cv2.waitKey(0)
-            cv2.destroyAllWindows()
-            """
-
-        else:
-            print("No pose landmarks detected")
-            return None
-
-        return score_neck
+    return score_neck
 
 
-image_path = 'backend/exercise/mediapipe/측면.jpeg'  
-neck_score = analyze_neck_angle(image_path)
+image_path = 'backend/exercise/mediapipe/측면1.jpeg'  
+neck_score_측면1 = analyze_neck_angle(image_path)
+neck_score_측면2 = analyze_neck_angle(image_path)
 
-if neck_score is not None:
-    print(f"Neck Score: {neck_score}")
+if neck_score_측면1 is not None:
+    print(f"Neck Score: {neck_score_측면1}")
+else:
+    print("Neck landmarks were not detected.")
+
+if neck_score_측면2 is not None:
+    print(f"Neck Score: {neck_score_측면2}")
 else:
     print("Neck landmarks were not detected.")

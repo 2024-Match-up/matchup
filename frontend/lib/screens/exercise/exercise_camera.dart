@@ -40,7 +40,16 @@ class _ExerciseCameraScreenState extends State<ExerciseCameraScreen> {
   void initState() {
     super.initState();
 
-    flutterTts.setLanguage('ko-KR'); // TTS 언어 설정
+    _initializeTTS();
+
+    _connectWebSocket();
+    _startTimer();
+  }
+
+  void _initializeTTS() {
+    flutterTts.setLanguage('ko-KR').catchError((error) {
+      print("Error setting language: $error");
+    }); // TTS 언어 설정
     flutterTts.setSpeechRate(0.5); // 말하는 속도 설정
 
     flutterTts.setCompletionHandler(() {
@@ -51,7 +60,9 @@ class _ExerciseCameraScreenState extends State<ExerciseCameraScreen> {
         }
       });
     });
+  }
 
+  void _connectWebSocket() {
     try {
       _channel = WebSocketChannel.connect(
         Uri.parse('ws://172.30.1.78:8000/api/v1/exercise/ws'),
@@ -67,18 +78,23 @@ class _ExerciseCameraScreenState extends State<ExerciseCameraScreen> {
       _channel.stream.listen(
         (event) {
           print('WebSocket event: $event');
-          final data = jsonDecode(event);
-          setState(() {
-            feedback = data['feedback'];
-            realCount = data['counter'];
-            sets = data['sets'];
-            if (feedback.isNotEmpty && feedback != lastSpokenFeedback && !ttsQueue.contains(feedback)) {
-              ttsQueue.add(feedback);
-              if (!isSpeaking) {
-                _speak();
+          try {
+            final data = jsonDecode(event);
+            setState(() {
+              feedback = data['feedback'];
+              realCount = data['counter'];
+              sets = data['sets'];
+              print('Updated realCount: $realCount, sets: $sets');
+              if (feedback.isNotEmpty && feedback != lastSpokenFeedback && !ttsQueue.contains(feedback)) {
+                ttsQueue.add(feedback);
+                if (!isSpeaking) {
+                  _speak();
+                }
               }
-            }
-          });
+            });
+          } catch (e) {
+            print('Error parsing JSON: $e');
+          }
         },
         onError: (error) {
           print('WebSocket error: $error');
@@ -101,7 +117,9 @@ class _ExerciseCameraScreenState extends State<ExerciseCameraScreen> {
     } catch (e) {
       print('WebSocket connection failed: $e');
     }
+  }
 
+  void _startTimer() {
     _timer = Timer.periodic(Duration(seconds: 1), (Timer timer) {
       if (_remainingTime > 0) {
         setState(() {
@@ -230,3 +248,4 @@ class _ExerciseCameraScreenState extends State<ExerciseCameraScreen> {
     return item;
   }
 }
+ 

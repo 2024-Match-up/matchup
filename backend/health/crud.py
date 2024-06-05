@@ -90,19 +90,34 @@ def restore_health_data(db: Session,user_id: int):
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
     
-def download_image_from_s3(image_url: str):
+# def download_image_from_s3(image_url: str):
+#     """
+#     S3에서 이미지를 다운로드하는 함수
+#     """
+#     try:
+#         response = requests.get(image_url)
+#         response.raise_for_status()
+#         image_array = np.asarray(bytearray(response.content), dtype=np.uint8)
+#         image = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
+#         return image
+#     except requests.exceptions.RequestException as e:
+#         raise HTTPException(status_code=400, detail=f"Error downloading image: {e}")
+#     return user_health
+
+def download_image_from_s3(image_url: str) -> np.ndarray:
     """
     S3에서 이미지를 다운로드하는 함수
     """
     try:
         response = requests.get(image_url)
         response.raise_for_status()
-        image_array = np.asarray(bytearray(response.content), dtype=np.uint8)
+        image_array = np.frombuffer(response.content, np.uint8)
         image = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
         return image
     except requests.exceptions.RequestException as e:
+        logging.error(f"Error downloading image: {e}")
         raise HTTPException(status_code=400, detail=f"Error downloading image: {e}")
-    return user_health
+
 
 def get_user_images(db: Session, user_id: int):
     return db.query(Health).filter(Health.user_id == user_id).all()

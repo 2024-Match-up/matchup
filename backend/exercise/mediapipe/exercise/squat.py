@@ -21,18 +21,13 @@ class SquatExercise:
 
         fieldnames = list(fieldnames)
 
-        # Write data to CSV
         with open('squat.csv', mode='a', newline='') as file:
             writer = csv.DictWriter(file, fieldnames=["data"] + fieldnames)
 
-            # Write the header
             writer.writeheader()
 
-            # Write the data rows
             for group, entries in ex_data.items():
-                # writer.writerow(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
                 for entry in entries:
-                    # row = {"data": group}
                     row = {"data": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
                     row.update(entry)
                     writer.writerow(row)
