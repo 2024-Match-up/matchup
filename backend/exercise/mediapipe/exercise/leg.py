@@ -2,6 +2,7 @@ import numpy as np
 import time
 from logger import logger
 import csv
+import datetime
 
 class LegExercise:
     def __init__(self):
@@ -11,7 +12,7 @@ class LegExercise:
         self.rest_start_time = 0
         self.position = None
         self.feedback = None
-    
+
     def write_exercise(self, ex_data):
         fieldnames = set()
         for key in ex_data:
@@ -20,17 +21,14 @@ class LegExercise:
 
         fieldnames = list(fieldnames)
 
-        # Write data to CSV
         with open('leg.csv', mode='a', newline='') as file:
             writer = csv.DictWriter(file, fieldnames=["data"] + fieldnames)
 
-            # Write the header
             writer.writeheader()
 
-            # Write the data rows
             for group, entries in ex_data.items():
                 for entry in entries:
-                    row = {"data": group}
+                    row = {"data": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
                     row.update(entry)
                     writer.writerow(row)
 
