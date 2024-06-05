@@ -20,7 +20,7 @@ async def get_token(Authorize: AuthJWT = Depends()):
     """
         새로운 엑세스 토큰 반환
     """
-    token = authenticate_refresh_token(Authorize)
+    token = authenticate_refresh_token(Authorize=Authorize)
     return JSONResponse({"access_token": token})
 
 @router.post("/signup", summary="회원가입", status_code=201, response_model=None)
@@ -90,7 +90,8 @@ async def logout(
     """ 
         로그아웃
     """
-    email = authenticate_access_token(Authorize=Authorize)
+    access_token = Authorize.get_raw_jwt()
+    email = authenticate_access_token(access_token, Authorize=Authorize)
     logger.info(f"로그아웃 유저 이메일: {email}")
     return {"message": "프런트에서 토큰 삭제하세요"}
 
@@ -99,13 +100,14 @@ async def create_profile(
     nickname: str = Form(..., description="User nickname"),
     height: int = Form(..., description="키"),
     weight: int = Form(..., description="몸무게"),
-    db: Session = Depends(get_db),
     Authorize: AuthJWT = Depends(),
+    db: Session = Depends(get_db),
 ):
     """
     사용자 프로필 생성
     """
-    email = authenticate_access_token(Authorize)
+    access_token = Authorize.get_raw_jwt()
+    email = authenticate_access_token(access_token, Authorize=Authorize)
     user = get_user(db, email)
     if not user:
         raise HTTPException(status_code=400, detail="User not found.")
@@ -125,7 +127,8 @@ async def get_profile(
     """
     사용자 프로필 조회
     """
-    email = authenticate_access_token(Authorize)
+    access_token = Authorize.get_raw_jwt()
+    email = authenticate_access_token(access_token, Authorize=Authorize)
     user = get_user(db, email)
     if not user:
         raise HTTPException(status_code=400, detail="User not found.")
@@ -149,7 +152,8 @@ async def update_profile(
     """
     사용자 프로필 수정
     """
-    email = authenticate_access_token(Authorize)
+    access_token = Authorize.get_raw_jwt()
+    email = authenticate_access_token(access_token, Authorize=Authorize)
     profile_data = UserProfileUpdate(nickname=nickname, height=height, weight=weight)
     result = update_user_profile(db, email, profile_data)
     if not result:
