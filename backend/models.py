@@ -58,4 +58,5 @@ class Session(Base):
     user_id = Column(Integer, ForeignKey("user.id"))
     exercise_id = Column(Integer, ForeignKey("exercise.id"))
     date = Column(DateTime)
+    score = Column(Integer) 
 
