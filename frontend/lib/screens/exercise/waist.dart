@@ -232,7 +232,7 @@ class _WaistStretchScreenState extends State<WaistStretchScreen> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => ExerciseCameraScreen(exerciseId: 4)),
+                    MaterialPageRoute(builder: (context) => ExerciseCameraScreen(exerciseId: 4, exerciseName: "허리 스트레칭",)),
                   );
                 },
                 child: Text('운동하기 가기'),

@@ -85,7 +85,7 @@ class LegStretchScreen extends StatelessWidget {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => ExerciseCameraScreen(exerciseId: 3,)),
+                    MaterialPageRoute(builder: (context) => ExerciseCameraScreen(exerciseId: 3, exerciseName: "런지",)),
                   );
                 },
                 child: Text('운동하기 가기'),
