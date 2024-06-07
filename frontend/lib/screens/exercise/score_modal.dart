@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../bottom_navigation_bar.dart';  
+import '../../models/UserProvider.dart';  
 
 class ScoreModal extends StatelessWidget {
   final double score;
@@ -36,7 +39,14 @@ class ScoreModal extends StatelessWidget {
         Center(
           child: ElevatedButton(
             onPressed: () {
-              Navigator.of(context).pop();
+              // UserProvider로부터 accessToken 가져오기
+              final userProvider = Provider.of<UserProvider>(context, listen: false);
+              final String? accessToken = userProvider.accessToken;
+              // BottomNavBar로 이동
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (context) => BottomNavBar(accessToken: accessToken ?? '')),
+                (Route<dynamic> route) => false,
+              );
             },
             child: Text('종료'),
           ),
