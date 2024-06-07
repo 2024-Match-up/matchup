@@ -31,7 +31,7 @@ class LoginScreen extends StatelessWidget {
               SizedBox(height: screenHeight * 0.03),
 
               Text(
-                'Match up!',
+                'Mobi-Move!',
                 style: TextStyle(fontSize: screenWidth * 0.1, fontFamily: "Timmana", fontWeight: FontWeight.w300),
                 textAlign: TextAlign.center,
               ),
