@@ -26,7 +26,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
   Future<void> _fetchExercisesForDay(DateTime day) async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     String? accessToken = userProvider.accessToken;
-    final String baseUrl = 'http://172.30.1.78:8000/api/v1';
+    final String baseUrl = 'http://172.30.1.72:8000/api/v1';
 
 
     final response = await http.get(

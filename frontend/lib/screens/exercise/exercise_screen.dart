@@ -17,40 +17,32 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
       children: <Widget>[
         ExerciseCard(
           title: '목 스트레칭',
-          duration: '15min',
-          calories: '-500kcal',
-          sets: '4 sets',
-          reps: '8-10 reps',
+          sets: '3 sets',
+          reps: '10 reps',
           onTap: () {
             _navigateToScreen(NeckStretchScreen());
           },
         ),
         ExerciseCard(
-          title: '골반 스트레칭',
-          duration: '15min',
-          calories: '-500kcal',
-          sets: '4 sets',
-          reps: '8-10 reps',
+          title: '스쿼트',
+          sets: '3 sets',
+          reps: '10 reps',
           onTap: () {
             _navigateToScreen(HipStretchScreen());
           },
         ),
         ExerciseCard(
-          title: '다리 스트레칭',
-          duration: '15min',
-          calories: '-500kcal',
-          sets: '4 sets',
-          reps: '8-10 reps',
+          title: '런지',
+          sets: '3 sets',
+          reps: '10 reps',
           onTap: () {
             _navigateToScreen(LegStretchScreen());
           },
         ),
         ExerciseCard(
           title: '허리 스트레칭',
-          duration: '15min',
-          calories: '-500kcal',
-          sets: '4 sets',
-          reps: '8-10 reps',
+          sets: '3 sets',
+          reps: '10 reps',
           onTap: () {
             _navigateToScreen(WaistStretchScreen());
           },
@@ -69,8 +61,6 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
 
 class ExerciseCard extends StatelessWidget {
   final String title;
-  final String duration;
-  final String calories;
   final String sets;
   final String reps;
   final VoidCallback? onTap;
@@ -78,8 +68,6 @@ class ExerciseCard extends StatelessWidget {
   const ExerciseCard({
     Key? key,
     required this.title,
-    required this.duration,
-    required this.calories,
     required this.sets,
     required this.reps,
     this.onTap,
@@ -106,24 +94,17 @@ class ExerciseCard extends StatelessWidget {
                     Text(
                       title,
                       style: TextStyle(
-                        fontSize: screenWidth * 0.035,
+                        fontSize: screenWidth * 0.05,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     SizedBox(height: screenWidth * 0.03),
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      mainAxisAlignment: MainAxisAlignment.end,
                       children: <Widget>[
-                        Text(duration),
-                        Text(sets),
-                      ],
-                    ),
-                    SizedBox(height: screenWidth * 0.03),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Text(calories),
                         Text(reps),
+                        Text('  |  '),
+                        Text(sets),
                       ],
                     ),
                   ],

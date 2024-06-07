@@ -9,11 +9,13 @@ import 'package:matchup/models/UserProvider.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'dart:collection'; // 큐 사용을 위해 추가
+import 'score_modal.dart';
 
 class ExerciseCameraScreen extends StatefulWidget {
   final int exerciseId;
+  final String exerciseName;
 
-  ExerciseCameraScreen({required this.exerciseId});
+  ExerciseCameraScreen({required this.exerciseId, required this.exerciseName});
 
   @override
   _ExerciseCameraScreenState createState() => _ExerciseCameraScreenState();
@@ -65,7 +67,7 @@ class _ExerciseCameraScreenState extends State<ExerciseCameraScreen> {
   void _connectWebSocket() {
     try {
       _channel = WebSocketChannel.connect(
-        Uri.parse('ws://172.30.1.78:8000/api/v1/exercise/ws'),
+        Uri.parse('ws://172.30.1.72:8000/api/v1/exercise/ws'),
       );
 
       final userProvider = Provider.of<UserProvider>(context, listen: false);
@@ -80,18 +82,36 @@ class _ExerciseCameraScreenState extends State<ExerciseCameraScreen> {
           print('WebSocket event: $event');
           try {
             final data = jsonDecode(event);
-            setState(() {
-              feedback = data['feedback'];
-              realCount = data['counter'];
-              sets = data['sets'];
-              print('Updated realCount: $realCount, sets: $sets');
-              if (feedback.isNotEmpty && feedback != lastSpokenFeedback && !ttsQueue.contains(feedback)) {
-                ttsQueue.add(feedback);
-                if (!isSpeaking) {
-                  _speak();
-                }
+
+            if (data.containsKey('final_score') && data.containsKey('total_count')) {
+              final int? totalCount = data['total_count'] is int ? data['total_count'] : null;
+              final double? finalScore = data['final_score'] is double ? data['final_score'] : null;
+
+              if (totalCount != null && finalScore != null && totalCount >= 20) {
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return ScoreModal(
+                      score: finalScore,
+                      exerciseName: widget.exerciseName,
+                    );
+                  },
+                );
               }
-            });
+            } else {
+              setState(() {
+                feedback = data['feedback'] ?? '';
+                realCount = data['counter'] ?? 0;
+                sets = data['sets'] ?? 0;
+                print('Updated realCount: $realCount, sets: $sets');
+                if (feedback.isNotEmpty && feedback != lastSpokenFeedback && !ttsQueue.contains(feedback)) {
+                  ttsQueue.add(feedback);
+                  if (!isSpeaking) {
+                    _speak();
+                  }
+                }
+              });
+            }
           } catch (e) {
             print('Error parsing JSON: $e');
           }
@@ -149,7 +169,7 @@ class _ExerciseCameraScreenState extends State<ExerciseCameraScreen> {
   @override
   void dispose() {
     _timer.cancel();
-    if (_coordinateTimer != null && _coordinateTimer.isActive) {
+    if (_coordinateTimer.isActive) {
       _coordinateTimer.cancel();
     }
     _channel.sink.close();
@@ -248,4 +268,3 @@ class _ExerciseCameraScreenState extends State<ExerciseCameraScreen> {
     return item;
   }
 }
- 
