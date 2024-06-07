@@ -9,9 +9,10 @@ class SessionBase(BaseModel):
     score: int
 
 class SessionScore(BaseModel):
+    date: str
     score: int
-    date: datetime.datetime
-
+    exercise_id: int  # 필드명을 올바르게 확인
+    
     class Config:
         orm_mode = True
 

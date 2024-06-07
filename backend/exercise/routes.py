@@ -37,39 +37,29 @@ router = APIRouter(
 async def get():
     return HTMLResponse(html)
 
-@router.get("/scores/{exercise_id}", summary="운동 아이디별 점수와 날짜 조회", response_model=List[SessionScore])
-async def get_scores_by_exercise_id(
-    exercise_id: int,
+@router.get("/scores", response_model=List[SessionScore])
+async def get_all_scores(
     Authorize: AuthJWT = Depends(),
     db: Session = Depends(get_db)
 ):
-    logger.info(f"Received request to get scores for exercise ID: {exercise_id}")
-
-    # JWT 토큰 인증
     Authorize.jwt_required()
     current_user = Authorize.get_jwt_subject()
-    logger.info(f"Authenticated user: {current_user}")
-
-    email = authenticate_access_token(current_user, Authorize=Authorize)
-    logger.info(f"User email extracted from token: {email}")
-
-    user = get_user(db, email)
+    user_email = authenticate_access_token(current_user, Authorize=Authorize)
+    user = get_user(db, user_email)
     if not user:
-        logger.error(f"User not found for email: {email}")
-        raise HTTPException(status_code=400, detail="User not found.")
+        raise HTTPException(status_code=404, detail="User not found.")
 
-    # 세션 데이터 조회
-    logger.info(f"Querying sessions for exercise ID: {exercise_id}")
-    sessions = db.query(SessionModel).filter(SessionModel.exercise_id == exercise_id).all()
+    sessions = db.query(SessionModel).filter(SessionModel.user_id == user.id).all()
     if not sessions:
-        logger.error(f"No sessions found for exercise ID: {exercise_id}")
-        raise HTTPException(status_code=404, detail="No sessions found for the given exercise_id")
+        raise HTTPException(status_code=404, detail="No sessions found")
 
-    # 결과 데이터 생성
-    result = [SessionScore(date=session.date, score=session.score if session.score is not None else 0) for session in sessions]
-    logger.info(f"Returning {len(result)} sessions for exercise ID: {exercise_id}")
-
-    return result
+    return [
+        SessionScore(
+            date=session.date.isoformat(),  # ISO 포맷으로 날짜를 문자열로 변환
+            score=session.score if session.score is not None else 0,
+            exercise_id=session.exercise_id  # exercise_id 제공 확인
+        ) for session in sessions
+    ]
 
 # 최종 점수 조회 엔드포인트 수정
 @router.get("/session/{session_id:int}/final_score", summary="최종 점수 조회", response_model=FinalScoreResponse)
