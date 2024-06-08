@@ -108,29 +108,32 @@ def get_current_user(token: str, db: Session = Depends(get_db)):
 def insert_initial_data():
     from models import Exercise
     from exercise.mediapipe.exercise.waist import WaistExercise
+    from.exercise.mediapipe.exercise.squat import SquatExercise
+    from.exercise.mediapipe.exercise.leg import LegExercise
+    from.exercise.mediapipe.exercise.neck import NeckExercise
     db = SessionLocal()
     try:
         exercises = [
             Exercise(
                 name="neck",
-                count=3,
+                count=5,
                 set=3,
                 time=0,
-                coordinate_list=[],
+                coordinate_list=[NeckExercise.get_neck_coordinates],
             ),
             Exercise(
                 name="hip",
-                count=10,
+                count=5,
                 set=3,
                 time=0,
-                coordinate_list=[],
+                coordinate_list=[SquatExercise.get_squat_coordinates],
             ),
             Exercise(
                 name="leg",
-                count=1,
+                count=5,
                 set=3,
                 time=10,
-                coordinate_list=[]
+                coordinate_list=[LegExercise.get_lunge_coordinates]
             ),
             Exercise(
                 name="waist",
