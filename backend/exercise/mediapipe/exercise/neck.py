@@ -82,7 +82,7 @@ class NeckExercise:
                 if current_time - self.prev_time >= 1:
                     self.counter += 1
                     self.prev_time = current_time
-                    if self.counter > 10:
+                    if self.counter > 5:
                         self.sets += 1
                         self.counter = 0
                         self.position = "Rest"

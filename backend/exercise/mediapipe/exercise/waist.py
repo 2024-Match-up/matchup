@@ -86,7 +86,7 @@ class WaistExercise:
                             logger.info(f"횟수 : {self.counter}")
                             self.left_arm_raised = False
                             self.right_arm_raised = False
-                            if self.counter >= 10:
+                            if self.counter >= 5:
                                 self.sets += 1
                                 self.counter = 0
                                 position = "Rest"
