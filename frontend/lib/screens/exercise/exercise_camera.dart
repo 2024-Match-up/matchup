@@ -67,7 +67,7 @@ class _ExerciseCameraScreenState extends State<ExerciseCameraScreen> {
   void _connectWebSocket() {
     try {
       _channel = WebSocketChannel.connect(
-        Uri.parse('ws://172.30.1.72:8000/api/v1/exercise/ws'),
+        Uri.parse('ws://13.124.114.252:8000/api/v1/exercise/ws'),
       );
 
       final userProvider = Provider.of<UserProvider>(context, listen: false);
@@ -92,7 +92,8 @@ class _ExerciseCameraScreenState extends State<ExerciseCameraScreen> {
                   context: context,
                   builder: (BuildContext context) {
                     return ScoreModal(
-                      score: finalScore
+                      score: finalScore,
+                      exerciseName: widget.exerciseName,
                     );
                   },
                 );
