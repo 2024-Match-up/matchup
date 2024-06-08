@@ -87,13 +87,12 @@ class _ExerciseCameraScreenState extends State<ExerciseCameraScreen> {
               final int? totalCount = data['total_count'] is int ? data['total_count'] : null;
               final double? finalScore = data['final_score'] is double ? data['final_score'] : null;
 
-              if (totalCount != null && finalScore != null && totalCount >= 20) {
+              if (totalCount != null && finalScore != null && totalCount >= 10) {
                 showDialog(
                   context: context,
                   builder: (BuildContext context) {
                     return ScoreModal(
-                      score: finalScore,
-                      exerciseName: widget.exerciseName,
+                      score: finalScore
                     );
                   },
                 );

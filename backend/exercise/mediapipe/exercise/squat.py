@@ -82,7 +82,7 @@ class SquatExercise:
                 self.position = "up"
                 self.counter += 1
                 logger.info(f"횟수: {self.counter}")
-                if self.counter == 10:
+                if self.counter == 5:
                     self.sets += 1
                     self.counter = 0
 
