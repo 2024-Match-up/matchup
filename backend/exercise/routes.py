@@ -118,10 +118,10 @@ async def get_counts(session_id: int, count: int):
     # rc.set(f"{session_id}_hw_count", count)
     hw_set = int(rc.get(f"{session_id}_hw_set")) if rc.get(f"{session_id}_hw_set") is not None else 0
 
-    if count < 10:
+    if count < 5:
         rc.set(f"{session_id}_hw_count", count)
         return "keep"
-    elif count >= 10 and hw_set < 2:
+    elif count >= 5 and hw_set < 2:
         hw_set += 1
         rc.set(f"{session_id}_hw_set", hw_set)
         return "set"
@@ -166,6 +166,7 @@ async def websocket_endpoint(
 
         result_cnt = 0
         result_set = 0
+        final_score = 0
 
         while True:
             data = await websocket.receive_text()
@@ -213,19 +214,15 @@ async def websocket_endpoint(
                 result_set = max(cur_mp_set, hw_set)
 
                 # 점수 계산 및 저장
-                total_count = 10 * result_set + result_cnt if result_cnt != 10 else 10 * result_set
-                hw_weight = 0.6
-                mp_weight = 0.4
-
-                # 가중치 차이 계산
-                count_difference = abs(hw_count - cur_mp_cnt)
-                max_difference = 10  # 최대 차이를 설정
-                weighted_difference = (count_difference / max_difference) * 100  # 백분율로 변환
+                total_count = 5 * result_set + result_cnt if result_cnt != 5 else 5 * result_set
+                hw_weight = 0.7
+                mp_weight = 0.3
 
                 # 점수를 백분율로 계산
-                final_score = max(0, 100 - weighted_difference)
+                final_score = 20 * (cur_mp_cnt * mp_weight + hw_count * hw_weight)
+                logger.info(f"Final Score: {final_score}%")
 
-                if result_set == 2 and result_cnt == 10:
+                if result_set == 2 and result_cnt == 5:
                     rc.set(f"{session_id}_final_score", final_score)
                     session.score = final_score  # DB에 점수 저장
                     db.commit()
@@ -237,7 +234,7 @@ async def websocket_endpoint(
                     logger.info(f"Final counts - result_cnt: {result_cnt}, result_set: {result_set}")
 
                     # 비교 후 최종 카운트와 세트 전송
-                    if(result_cnt != 10):
+                    if(result_cnt != 5):
                         metrics.update({'counter': result_cnt})
                         metrics.update({'sets': result_set})
                     else:
