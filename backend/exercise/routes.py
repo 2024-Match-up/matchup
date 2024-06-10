@@ -20,6 +20,8 @@ from exercise.mediapipe.exercise.squat import SquatExercise
 from exercise.mediapipe.exercise.leg import LegExercise
 from exercise.mediapipe.exercise.neck import NeckExercise
 from database import get_db
+import csv
+import datetime
 
 redis_host = "redis"
 redis_port = 6379
@@ -113,23 +115,68 @@ async def get_session_id_by_nickname(exercise_id: int, nickname: str, db: Sessio
         raise HTTPException(status_code=404, detail="Session not found")
     return session.id
 
+# @router.get("/session/{session_id}/count/{count}/hw", summary="HW 카운트 갱신")
+# async def get_counts(session_id: int, count: int):
+#     # rc.set(f"{session_id}_hw_count", count)
+#     hw_set = int(rc.get(f"{session_id}_hw_set")) if rc.get(f"{session_id}_hw_set") is not None else 0
+
+#     if count < 5:
+#         rc.set(f"{session_id}_hw_count", count)
+#         return "keep"
+#     elif count >= 5 and hw_set < 2:
+#         hw_set += 1
+#         rc.set(f"{session_id}_hw_set", hw_set)
+#         return "set"
+#     else:
+#         if hw_set == 2:
+#             rc.set(f"{session_id}_hw_count", count)
+#             return "end"
+#     return {session_id, count}
+
+
+def write_exercise(ex_data):
+    fieldnames = set()
+    for key in ex_data:
+        for entry in ex_data[key]:
+            fieldnames.update(entry.keys())
+
+    fieldnames = list(fieldnames)
+
+    with open('hw_squat.csv', mode='a', newline='') as file:
+        writer = csv.DictWriter(file, fieldnames=["data"] + fieldnames)
+
+        writer.writeheader()
+
+        for group, entries in ex_data.items():
+            for entry in entries:
+                row = {"data": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+                row.update(entry)
+                writer.writerow(row)
+
 @router.get("/session/{session_id}/count/{count}/hw", summary="HW 카운트 갱신")
 async def get_counts(session_id: int, count: int):
-    # rc.set(f"{session_id}_hw_count", count)
     hw_set = int(rc.get(f"{session_id}_hw_set")) if rc.get(f"{session_id}_hw_set") is not None else 0
 
     if count < 5:
         rc.set(f"{session_id}_hw_count", count)
-        return "keep"
+        status = "keep"
     elif count >= 5 and hw_set < 2:
         hw_set += 1
         rc.set(f"{session_id}_hw_set", hw_set)
-        return "set"
+        status = "set"
     else:
         if hw_set == 2:
             rc.set(f"{session_id}_hw_count", count)
-            return "end"
-    return {session_id, count}
+            status = "end"
+    
+    # 기록할 데이터 준비
+    ex_data = {
+        session_id: [{"count": count, "status": status}]
+    }
+    write_exercise(ex_data)
+
+    return status
+
 
 @router.websocket("/test")
 async def websocket_endpoint(websocket: WebSocket):
