@@ -2,7 +2,6 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect, BackgroundTasks, 
 from fastapi.responses import HTMLResponse
 from fastapi_another_jwt_auth import AuthJWT
 from sqlalchemy.orm import Session
-from datetime import datetime
 import pytz
 import redis
 import models  # 데이터베이스 모델 임포트
@@ -21,7 +20,8 @@ from exercise.mediapipe.exercise.leg import LegExercise
 from exercise.mediapipe.exercise.neck import NeckExercise
 from database import get_db
 import csv
-import datetime
+import datetime as dt
+from datetime import datetime
 
 redis_host = "redis"
 redis_port = 6379
@@ -149,7 +149,7 @@ def write_exercise(ex_data):
 
         for group, entries in ex_data.items():
             for entry in entries:
-                row = {"data": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+                row = {"data": dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
                 row.update(entry)
                 writer.writerow(row)
 
@@ -204,7 +204,7 @@ async def websocket_endpoint(
         email = authenticate_access_token(access_token, Authorize)
         user = get_user(db, email)
         userId = user.id
-        session = create_session(db, user_id=userId, exercise_id=exercise_id, date=datetime.now(kst))
+        session = create_session(db, user_id=userId, exercise_id=exercise_id, date=dt.datetime.now(kst))
         session_id = session.id
 
         await websocket.send_text(f"Session created for exercise ID: {exercise_id}, Session ID: {session_id}")
@@ -286,7 +286,7 @@ async def websocket_endpoint(
                     rc.set(f"{session_id}_final_score", final_score)
                     session.score = final_score  # DB에 점수 저장
                     db.commit()
-                    logger.info(f"Final Score: {final_score}%")
+                    logger.info(f"Final Score: {final_score}%, Total Count: {total_count}")
                     await websocket.send_json({"final_score": final_score, "total_count": total_count})
                     # await websocket.close()
                     break
