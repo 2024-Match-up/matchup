@@ -266,8 +266,21 @@ async def websocket_endpoint(
                 mp_weight = 0.3
 
                 # 점수를 백분율로 계산
-                final_score = 20 * (cur_mp_cnt * mp_weight + hw_count * hw_weight)
-                logger.info(f"Final Score: {final_score}%")
+                # final_score = 20 * (cur_mp_cnt * mp_weight + hw_count * hw_weight)
+                # logger.info(f"Final Score: {final_score}%")
+                
+                # 점수를 백분율로 계산
+                def get_final_score(cur_mp_cnt, hw_count, exercise_id):
+                    if exercise_id == 1 or exercise_id == 4:
+                        return 20 * cur_mp_cnt
+                    elif exercise_id == 2 or exercise_id == 3:
+                        return 20 * (cur_mp_cnt * mp_weight + hw_count * hw_weight)
+                
+                # 기존 코드    
+                # final_score = 20 * (cur_mp_cnt * mp_weight + hw_count * hw_weight)
+                
+                # 변경된 코드
+                final_score = get_final_score(cur_mp_cnt, hw_count, exercise_id)
 
                 if result_set == 2 and result_cnt == 5:
                     rc.set(f"{session_id}_final_score", final_score)
