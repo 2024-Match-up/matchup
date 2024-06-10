@@ -5,7 +5,7 @@ from fastapi_another_jwt_auth.exceptions import AuthJWTException
 
 import os
 import models
-from database import engine, insert_initial_data
+from database import engine, SessionLocal
 from user import routes as user_routes
 from exercise import routes as exercise_routes
 from logger import logger
@@ -17,6 +17,11 @@ from user import routes as user_routes
 from exercise import routes as exercise_routes
 from health import routes as health_routes
 from session import routes as session_routes
+from models import Exercise
+from exercise.mediapipe.exercise.waist import WaistExercise
+from exercise.mediapipe.exercise.squat import SquatExercise
+from exercise.mediapipe.exercise.leg import LegExercise
+from exercise.mediapipe.exercise.neck import NeckExercise
 
 dotenv.load_dotenv()
 
@@ -45,6 +50,44 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+def insert_initial_data():
+    db = SessionLocal()
+    try:
+        exercises = [
+            Exercise(
+                name="neck",
+                count=5,
+                set=3,
+                time=0,
+                coordinate_list=[NeckExercise.get_neck_coordinates()],
+            ),
+            Exercise(
+                name="hip",
+                count=5,
+                set=3,
+                time=0,
+                coordinate_list=[SquatExercise.get_squat_coordinates()],
+            ),
+            Exercise(
+                name="leg",
+                count=5,
+                set=3,
+                time=10,
+                coordinate_list=[LegExercise.get_lunge_coordinates()]
+            ),
+            Exercise(
+                name="waist",
+                count=5,
+                set=3,
+                time=0,
+                coordinate_list=WaistExercise.get_waist_coordinates(),
+            )
+        ]
+        db.add_all(exercises)
+        db.commit()
+    finally:
+        db.close()
 
 try:
     models.Base.metadata.create_all(bind=engine)

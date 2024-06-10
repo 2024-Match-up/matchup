@@ -92,14 +92,13 @@ class NeckExercise:
             return {
                 'counter': self.counter,
                 'sets': self.sets,
-                'Neck_angle': self.Neck_angle,
-                'position': self.position
+                'Neck_angle': self.Neck_angle
+                # 'position': self.position
             }
         except Exception as e:
             logger.error(f"Error in calculate_metrics: {e}")
             return {'error': str(e)}
 
-    @staticmethod
     def get_neck_coordinates():
         coordinates = [
             "NOSE",
