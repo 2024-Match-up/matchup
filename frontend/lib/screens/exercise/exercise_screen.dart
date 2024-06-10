@@ -18,7 +18,7 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
         ExerciseCard(
           title: '목 스트레칭',
           sets: '3 sets',
-          reps: '10 reps',
+          reps: '5 reps',
           onTap: () {
             _navigateToScreen(NeckStretchScreen());
           },
@@ -26,7 +26,7 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
         ExerciseCard(
           title: '스쿼트',
           sets: '3 sets',
-          reps: '10 reps',
+          reps: '5 reps',
           onTap: () {
             _navigateToScreen(HipStretchScreen());
           },
@@ -34,7 +34,7 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
         ExerciseCard(
           title: '런지',
           sets: '3 sets',
-          reps: '10 reps',
+          reps: '5 reps',
           onTap: () {
             _navigateToScreen(LegStretchScreen());
           },
@@ -42,7 +42,7 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
         ExerciseCard(
           title: '허리 스트레칭',
           sets: '3 sets',
-          reps: '10 reps',
+          reps: '5 reps',
           onTap: () {
             _navigateToScreen(WaistStretchScreen());
           },

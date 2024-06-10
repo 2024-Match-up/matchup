@@ -68,6 +68,7 @@ class _ExerciseCameraScreenState extends State<ExerciseCameraScreen> {
     try {
       _channel = WebSocketChannel.connect(
         Uri.parse('ws://13.124.114.252:8000/api/v1/exercise/ws'),
+        // Uri.parse('ws://172.30.1.78:8000/api/v1/exercise/ws'),
       );
 
       final userProvider = Provider.of<UserProvider>(context, listen: false);
@@ -84,8 +85,10 @@ class _ExerciseCameraScreenState extends State<ExerciseCameraScreen> {
             final data = jsonDecode(event);
 
             if (data.containsKey('final_score') && data.containsKey('total_count')) {
-              final int? totalCount = data['total_count'] is int ? data['total_count'] : null;
-              final double? finalScore = data['final_score'] is double ? data['final_score'] : null;
+              // final int? totalCount = data['total_count'] is int ? data['total_count'] : null;
+              // final double? finalScore = data['final_score'] is double ? data['final_score'] : null;
+              int? totalCount = data['total_count'] ?? 0;
+              double? finalScore = data['final_score'] ?? 0.0;
 
               if (totalCount != null && finalScore != null && totalCount >= 10) {
                 showDialog(
@@ -232,7 +235,7 @@ class _ExerciseCameraScreenState extends State<ExerciseCameraScreen> {
   }
 
   void _sendCoordinatesPeriodically() {
-    _coordinateTimer = Timer.periodic(Duration(milliseconds: 100), (Timer timer) {
+    _coordinateTimer = Timer.periodic(Duration(milliseconds: 300), (Timer timer) {
       if (_isExercising && _isWebSocketConnected) {
         List<Offset> coordinates = [];
         switch (widget.exerciseId) {
