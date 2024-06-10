@@ -75,4 +75,3 @@ dependencies {
     implementation "androidx.camera:camera-lifecycle:1.0.0-beta07"
 }
 
-
