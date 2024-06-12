@@ -12,7 +12,7 @@ class GradeScreen extends StatefulWidget {
 
 class _GradeScreenState extends State<GradeScreen> {
   final String baseUrl = 'http://13.124.114.252:8000/api/v1';
-  // final String baseUrl = 'http://172.30.1.78:8000/api/v1';
+  // final String baseUrl = 'http://10.254.3.138:8000/api/v1';
   
   Future<Map<int, List<SessionScore>>> fetchScores(String token) async {
     Map<int, List<SessionScore>> exerciseScores = {3: [], 4: []};  // 기본적으로 빈 리스트 할당

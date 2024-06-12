@@ -10,7 +10,7 @@ import 'package:provider/provider.dart';
 import '/models/UserProvider.dart'; // 수정된 경로
 
 final String baseUrl = 'http://13.124.114.252:8000/api/v1';
-// final String baseUrl = 'http://172.30.1.78:8000/api/v1';
+// final String baseUrl = 'http://10.254.3.138:8000/api/v1';
 
 class BodyScanScreen extends StatefulWidget {
   const BodyScanScreen({Key? key}) : super(key: key);
