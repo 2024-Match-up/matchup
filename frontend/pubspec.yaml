@@ -79,8 +79,9 @@ flutter:
   - lib/assets/images/
   - lib/screens/
   - lib/assets/fonts/
-  - lib/assets/video/squat01.mp4
-
+  - lib/assets/video/lunge.mp4
+  - lib/assets/video/squat.mp4
+  - lib/assets/video/waist.mp4
 
   # To add assets to your application, add an assets section, like this:
   # assets:
