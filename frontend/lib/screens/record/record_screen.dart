@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:matchup/models/UserProvider.dart';
 
 final String baseUrl = 'http://13.124.114.252:8000/api/v1';
-// final String baseUrl = 'http://172.30.1.78:8000/api/v1';
+// final String baseUrl = 'http://10.254.3.138:8000/api/v1';
 
 class RecordScreen extends StatefulWidget {
   @override
