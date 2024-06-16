@@ -90,7 +90,7 @@ class _ExerciseCameraScreenState extends State<ExerciseCameraScreen> {
               int? totalCount = data['total_count'] ?? 0;
               double? finalScore = data['final_score'] ?? 0.0;
 
-              if (totalCount != null && finalScore != null && totalCount >= 5) {
+              if (totalCount != null && finalScore != null && totalCount >= 4) {
                 showDialog(
                   context: context,
                   builder: (BuildContext context) {
