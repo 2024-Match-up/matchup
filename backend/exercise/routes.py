@@ -282,7 +282,7 @@ async def websocket_endpoint(
                 # 변경된 코드
                 final_score = get_final_score(cur_mp_cnt, hw_count, exercise_id)
 
-                if result_set == 2 and result_cnt == 5:
+                if result_set == 0 and result_cnt == 5:
                     rc.set(f"{session_id}_final_score", final_score)
                     session.score = final_score  # DB에 점수 저장
                     db.commit()
