@@ -69,7 +69,7 @@ class CameraScreen extends StatelessWidget {
               fit: BoxFit.contain,
             ),
             Text(
-              'Match up!',
+              'Mobi-Move!',
               style: TextStyle(
                 fontSize: screenWidth * 0.15,
                 fontFamily: "Timmana",
