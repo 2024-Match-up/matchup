@@ -89,14 +89,14 @@ class _BottomNavBarState extends State<BottomNavBar> {
               icon: Icon(Icons.calendar_month, size: screenWidth * 0.07), 
               label: '달력',
             ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.photo_camera, size: screenWidth * 0.07), 
-              label: '카메라',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.timeline, size: screenWidth * 0.07),
-              label: '그래프',
-            ),
+            // BottomNavigationBarItem(
+            //   icon: Icon(Icons.photo_camera, size: screenWidth * 0.07), 
+            //   label: '카메라',
+            // ),
+            // BottomNavigationBarItem(
+            //   icon: Icon(Icons.timeline, size: screenWidth * 0.07),
+            //   label: '그래프',
+            // ),
             BottomNavigationBarItem(
               icon: Icon(Icons.emoji_events, size: screenWidth * 0.07),
               label: '랭킹',

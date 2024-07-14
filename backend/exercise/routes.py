@@ -115,23 +115,23 @@ async def get_session_id_by_nickname(exercise_id: int, nickname: str, db: Sessio
         raise HTTPException(status_code=404, detail="Session not found")
     return session.id
 
-# @router.get("/session/{session_id}/count/{count}/hw", summary="HW 카운트 갱신")
-# async def get_counts(session_id: int, count: int):
-#     # rc.set(f"{session_id}_hw_count", count)
-#     hw_set = int(rc.get(f"{session_id}_hw_set")) if rc.get(f"{session_id}_hw_set") is not None else 0
+@router.get("/session/{session_id}/count/{count}/hw", summary="HW 카운트 갱신")
+async def get_counts(session_id: int, count: int):
+    # rc.set(f"{session_id}_hw_count", count)
+    hw_set = int(rc.get(f"{session_id}_hw_set")) if rc.get(f"{session_id}_hw_set") is not None else 0
 
-#     if count < 5:
-#         rc.set(f"{session_id}_hw_count", count)
-#         return "keep"
-#     elif count >= 5 and hw_set < 2:
-#         hw_set += 1
-#         rc.set(f"{session_id}_hw_set", hw_set)
-#         return "set"
-#     else:
-#         if hw_set == 2:
-#             rc.set(f"{session_id}_hw_count", count)
-#             return "end"
-#     return {session_id, count}
+    if count < 5:
+        rc.set(f"{session_id}_hw_count", count)
+        return "keep"
+    elif count >= 5 and hw_set < 2:
+        hw_set += 1
+        rc.set(f"{session_id}_hw_set", hw_set)
+        return "set"
+    else:
+        if hw_set == 2:
+            rc.set(f"{session_id}_hw_count", count)
+            return "end"
+    return {session_id, count}
 
 
 def write_exercise(ex_data):
@@ -282,7 +282,7 @@ async def websocket_endpoint(
                 # 변경된 코드
                 final_score = get_final_score(cur_mp_cnt, hw_count, exercise_id)
 
-                if result_set == 0 and result_cnt == 4:
+                if result_set == 2 and result_cnt == 4:
                     rc.set(f"{session_id}_final_score", final_score)
                     session.score = final_score  # DB에 점수 저장
                     db.commit()

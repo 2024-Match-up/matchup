@@ -4,7 +4,7 @@ aiofiles
 annotated-types==0.6.0
 anyio==4.3.0
 attrs==23.2.0
-bcrypt==4.1.2
+bcrypt==4.0.1
 boto3==1.28.0
 botocore==1.31.85
 certifi==2024.2.2
