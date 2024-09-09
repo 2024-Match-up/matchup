@@ -11,7 +11,7 @@ class GradeScreen extends StatefulWidget {
 }
 
 class _GradeScreenState extends State<GradeScreen> {
-  final String baseUrl = 'http://localhost:8000/api/v1';
+  final String baseUrl = 'http://192.168.0.13:8000/api/v1';
   // final String baseUrl = 'http://10.254.3.138:8000/api/v1';
 
   Future<Map<int, List<SessionScore>>> fetchScores(String token) async {

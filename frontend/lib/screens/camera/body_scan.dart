@@ -9,7 +9,7 @@ import 'package:http_parser/http_parser.dart';
 import 'package:provider/provider.dart';
 import '/models/UserProvider.dart'; // 수정된 경로
 
-final String baseUrl = 'http://localhost:8000/api/v1';
+final String baseUrl = 'http://192.168.0.13:8000/api/v1';
 // final String baseUrl = 'http://10.254.3.138:8000/api/v1';
 
 class BodyScanScreen extends StatefulWidget {
