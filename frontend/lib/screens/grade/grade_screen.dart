@@ -11,14 +11,16 @@ class GradeScreen extends StatefulWidget {
 }
 
 class _GradeScreenState extends State<GradeScreen> {
-  final String baseUrl = 'http://13.124.114.252:8000/api/v1';
+  final String baseUrl = 'http://localhost:8000/api/v1';
   // final String baseUrl = 'http://10.254.3.138:8000/api/v1';
-  
+
   Future<Map<int, List<SessionScore>>> fetchScores(String token) async {
-    Map<int, List<SessionScore>> exerciseScores = {3: [], 4: []};  // 기본적으로 빈 리스트 할당
-    var response = await http.get(Uri.parse('$baseUrl/exercise/scores'), headers: {
-      'Authorization': 'Bearer $token'
-    });
+    Map<int, List<SessionScore>> exerciseScores = {
+      3: [],
+      4: []
+    }; // 기본적으로 빈 리스트 할당
+    var response = await http.get(Uri.parse('$baseUrl/exercise/scores'),
+        headers: {'Authorization': 'Bearer $token'});
     if (response.statusCode == 200) {
       List<dynamic> allScoresJson = jsonDecode(response.body);
       for (var scoreJson in allScoresJson) {
@@ -42,7 +44,7 @@ class _GradeScreenState extends State<GradeScreen> {
     final screenHeight = MediaQuery.of(context).size.height;
 
     return DefaultTabController(
-      length: 2,  // 스쿼트와 런지, 두 가지 탭
+      length: 2, // 스쿼트와 런지, 두 가지 탭
       child: Scaffold(
         body: FutureBuilder(
           future: fetchScores(token!),
@@ -51,22 +53,25 @@ class _GradeScreenState extends State<GradeScreen> {
               if (snapshot.hasError) {
                 return Text("Error: ${snapshot.error}");
               } else {
-                var exerciseScores = snapshot.data as Map<int, List<SessionScore>>?;
+                var exerciseScores =
+                    snapshot.data as Map<int, List<SessionScore>>?;
                 return Column(
                   children: <Widget>[
                     TabBar(
                       labelColor: Colors.black,
                       labelStyle: TextStyle(fontSize: screenWidth * 0.04),
                       tabs: [
-                        Tab(text: '스쿼트'),  // ID 3
-                        Tab(text: '런지'),  // ID 4
+                        Tab(text: '스쿼트'), // ID 3
+                        Tab(text: '런지'), // ID 4
                       ],
                     ),
                     Expanded(
                       child: TabBarView(
                         children: [
-                          buildRankingList(exerciseScores?[3] ?? [], screenWidth, screenHeight),  // 스쿼트 탭 뷰
-                          buildRankingList(exerciseScores?[4] ?? [], screenWidth, screenHeight),  // 런지 탭 뷰
+                          buildRankingList(exerciseScores?[3] ?? [],
+                              screenWidth, screenHeight), // 스쿼트 탭 뷰
+                          buildRankingList(exerciseScores?[4] ?? [],
+                              screenWidth, screenHeight), // 런지 탭 뷰
                         ],
                       ),
                     ),
@@ -82,28 +87,32 @@ class _GradeScreenState extends State<GradeScreen> {
     );
   }
 
-  Widget buildRankingList(List<SessionScore> scores, double screenWidth, double screenHeight) {
-  // 점수를 내림차순으로 정렬
-  scores.sort((a, b) => b.score.compareTo(a.score));
+  Widget buildRankingList(
+      List<SessionScore> scores, double screenWidth, double screenHeight) {
+    // 점수를 내림차순으로 정렬
+    scores.sort((a, b) => b.score.compareTo(a.score));
 
-  return ListView.builder(
-    itemCount: scores.isEmpty ? 1 : scores.length,
-    itemBuilder: (context, index) {
-      if (scores.isEmpty) {
+    return ListView.builder(
+      itemCount: scores.isEmpty ? 1 : scores.length,
+      itemBuilder: (context, index) {
+        if (scores.isEmpty) {
+          return ListTile(
+            title: Text('No data available',
+                style: TextStyle(fontSize: screenWidth * 0.045)),
+            subtitle:
+                Text('점수: 0', style: TextStyle(fontSize: screenWidth * 0.035)),
+          );
+        }
         return ListTile(
-          title: Text('No data available', style: TextStyle(fontSize: screenWidth * 0.045)),
-          subtitle: Text('점수: 0', style: TextStyle(fontSize: screenWidth * 0.035)),
+          leading: _leadingIcon(index, screenWidth),
+          title: Text(scores[index].getFormattedDate(),
+              style: TextStyle(fontSize: screenWidth * 0.045)), // 포맷된 날짜 사용
+          subtitle: Text('점수: ${scores[index].score}',
+              style: TextStyle(fontSize: screenWidth * 0.035)),
         );
-      }
-      return ListTile(
-        leading: _leadingIcon(index, screenWidth),
-        title: Text(scores[index].getFormattedDate(), style: TextStyle(fontSize: screenWidth * 0.045)),  // 포맷된 날짜 사용
-        subtitle: Text('점수: ${scores[index].score}', style: TextStyle(fontSize: screenWidth * 0.035)),
-      );
-    },
-  );
-}
-
+      },
+    );
+  }
 
   Widget _leadingIcon(int index, double screenWidth) {
     // 순위에 따라 다른 아이콘 표시
@@ -116,7 +125,8 @@ class _GradeScreenState extends State<GradeScreen> {
       case 3:
         return Icon(Icons.emoji_events, color: Color(0xFFCD7F32)); // Bronze
       default:
-        return Text('$rank', style: TextStyle(fontSize: screenWidth * 0.035)); // 그 외 순위
+        return Text('$rank',
+            style: TextStyle(fontSize: screenWidth * 0.035)); // 그 외 순위
     }
   }
 }
@@ -126,14 +136,14 @@ class SessionScore {
   final int score;
   final int exerciseId;
 
-  SessionScore({required this.date, required this.score, required this.exerciseId});
+  SessionScore(
+      {required this.date, required this.score, required this.exerciseId});
 
   factory SessionScore.fromJson(Map<String, dynamic> json) {
     return SessionScore(
-      date: json['date'],
-      score: json['score'],
-      exerciseId: json['exercise_id']
-    );
+        date: json['date'],
+        score: json['score'],
+        exerciseId: json['exercise_id']);
   }
 
   String getFormattedDate() {

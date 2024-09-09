@@ -9,7 +9,7 @@ import 'package:http_parser/http_parser.dart';
 import 'package:provider/provider.dart';
 import '/models/UserProvider.dart'; // 수정된 경로
 
-final String baseUrl = 'http://13.124.114.252:8000/api/v1';
+final String baseUrl = 'http://localhost:8000/api/v1';
 // final String baseUrl = 'http://10.254.3.138:8000/api/v1';
 
 class BodyScanScreen extends StatefulWidget {
@@ -36,7 +36,8 @@ class _BodyScanScreenState extends State<BodyScanScreen> {
   Future<void> initializeCamera() async {
     _cameras = await availableCameras();
     _controller = CameraController(
-      _cameras.firstWhere((camera) => camera.lensDirection == CameraLensDirection.front),
+      _cameras.firstWhere(
+          (camera) => camera.lensDirection == CameraLensDirection.front),
       ResolutionPreset.max,
       enableAudio: false,
     );
@@ -55,7 +56,8 @@ class _BodyScanScreenState extends State<BodyScanScreen> {
     try {
       final XFile file = await _controller.takePicture();
       final Directory directory = await getApplicationDocumentsDirectory();
-      final String imagePath = join(directory.path, 'Photo_${DateTime.now()}.jpg');
+      final String imagePath =
+          join(directory.path, 'Photo_${DateTime.now()}.jpg');
       await File(file.path).copy(imagePath);
       setState(() {
         _photoCount++;
@@ -189,11 +191,16 @@ class _BodyScanScreenState extends State<BodyScanScreen> {
                     Text.rich(
                       TextSpan(
                         text: '$_remainingTime 초 후에 ',
-                        style: TextStyle(color: Colors.black, fontSize: 30, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 30,
+                            fontWeight: FontWeight.bold),
                         children: <TextSpan>[
                           TextSpan(
                             text: _photoCount == 0 ? '정면 촬영' : '측면 촬영',
-                            style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold),
                           ),
                           TextSpan(
                             text: '을 시작합니다.',

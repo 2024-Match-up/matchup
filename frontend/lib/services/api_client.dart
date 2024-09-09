@@ -2,14 +2,12 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class ApiClient {
-  final String baseUrl = 'http://13.124.114.252:8000/api/v1';
+  final String baseUrl = 'http://localhost:8000/api/v1';
   // final String baseUrl = 'http://10.254.3.138:8000/api/v1';
-  
-
-
 
   // 회원가입
-  Future<void> signup(String email, String password, String nickname, DateTime birth, String gender) async {
+  Future<void> signup(String email, String password, String nickname,
+      DateTime birth, String gender) async {
     var response = await http.post(
       Uri.parse('$baseUrl/user/signup'),
       headers: {'Content-Type': 'application/x-www-form-urlencoded'},
@@ -42,7 +40,8 @@ class ApiClient {
   }
 
   // 프로필 정보 입력
-  Future<void> createProfile(String nickname, int height, int weight, String accessToken) async {
+  Future<void> createProfile(
+      String nickname, int height, int weight, String accessToken) async {
     var response = await http.post(
       Uri.parse('$baseUrl/user/profile'),
       headers: {
@@ -64,9 +63,7 @@ class ApiClient {
   Future<Map<String, dynamic>> getProfile(String accessToken) async {
     var response = await http.get(
       Uri.parse('$baseUrl/user/profile'),
-      headers: {
-        'Authorization': 'Bearer $accessToken'
-      },
+      headers: {'Authorization': 'Bearer $accessToken'},
     );
     if (response.statusCode == 200) {
       return json.decode(response.body);
@@ -76,7 +73,8 @@ class ApiClient {
   }
 
   // 프로필 정보 업데이트
-  Future<void> updateProfile(String nickname, int height, int weight, String accessToken) async {
+  Future<void> updateProfile(
+      String nickname, int height, int weight, String accessToken) async {
     var response = await http.put(
       Uri.parse('$baseUrl/user/profile'),
       headers: {

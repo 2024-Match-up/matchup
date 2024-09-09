@@ -5,10 +5,8 @@ import 'body_scan.dart';
 import 'gallery_screen.dart';
 import 'package:matchup/models/UserProvider.dart';
 
-
-final String baseUrl = 'http://13.124.114.252:8000/api/v1';
+final String baseUrl = 'http://localhost:8000/api/v1';
 // final String baseUrl = 'http://10.254.3.138:8000/api/v1';
-
 
 class CameraScreen extends StatelessWidget {
   Future<void> sendGetRequest(BuildContext context) async {
@@ -33,7 +31,9 @@ class CameraScreen extends StatelessWidget {
         } else {
           print('Request failed with status: ${response.statusCode}');
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Request failed with status: ${response.statusCode}')),
+            SnackBar(
+                content:
+                    Text('Request failed with status: ${response.statusCode}')),
           );
         }
       } catch (e) {
@@ -97,7 +97,8 @@ class CameraScreen extends StatelessWidget {
                           fontSize: screenWidth * 0.04,
                         ),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(screenWidth * 0.05),
+                          borderRadius:
+                              BorderRadius.circular(screenWidth * 0.05),
                         ),
                       ),
                       onPressed: () {
@@ -122,13 +123,15 @@ class CameraScreen extends StatelessWidget {
                           fontSize: screenWidth * 0.04,
                         ),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(screenWidth * 0.05),
+                          borderRadius:
+                              BorderRadius.circular(screenWidth * 0.05),
                         ),
                       ),
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => GalleryScreen()),
+                          MaterialPageRoute(
+                              builder: (context) => GalleryScreen()),
                         );
                       },
                     ),

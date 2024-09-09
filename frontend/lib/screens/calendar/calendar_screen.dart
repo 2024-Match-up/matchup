@@ -26,10 +26,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
   Future<void> _fetchExercisesForDay(DateTime day) async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     String? accessToken = userProvider.accessToken;
-    final String baseUrl = 'http://13.124.114.252:8000/api/v1';
+    final String baseUrl = 'http://localhost:8000/api/v1';
     // final String baseUrl = 'http://10.254.3.138:8000/api/v1';
-    
-
 
     final response = await http.get(
       Uri.parse('$baseUrl/session?date=${day.toIso8601String().split('T')[0]}'),
@@ -43,7 +41,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
       List<dynamic> exercises = json.decode(utf8.decode(response.bodyBytes));
       setState(() {
         _selectedDayExercises = exercises
-            .where((exercise) => DateTime.parse(exercise['date']).toLocal().toIso8601String().split('T')[0] == day.toIso8601String().split('T')[0])
+            .where((exercise) =>
+                DateTime.parse(exercise['date'])
+                    .toLocal()
+                    .toIso8601String()
+                    .split('T')[0] ==
+                day.toIso8601String().split('T')[0])
             .map((exercise) => exercise['exercise'].toString())
             .toList();
       });

@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:matchup/models/UserProvider.dart';
 
-final String baseUrl = 'http://13.124.114.252:8000/api/v1';
+final String baseUrl = 'http://localhost:8000/api/v1';
 // final String baseUrl = 'http://10.254.3.138:8000/api/v1';
 
 class RecordScreen extends StatefulWidget {
@@ -78,7 +78,8 @@ class _RecordScreenState extends State<RecordScreen> {
     }).toList();
   }
 
-  Widget buildSection(BuildContext context, String title, Future<List<FlSpot>> futureSpots) {
+  Widget buildSection(
+      BuildContext context, String title, Future<List<FlSpot>> futureSpots) {
     var screenWidth = MediaQuery.of(context).size.width;
     var screenHeight = MediaQuery.of(context).size.height;
 
@@ -114,7 +115,8 @@ class _RecordScreenState extends State<RecordScreen> {
                 return FutureBuilder<List<HealthData>>(
                   future: healthDataListFuture,
                   builder: (context, healthDataSnapshot) {
-                    if (healthDataSnapshot.connectionState == ConnectionState.waiting) {
+                    if (healthDataSnapshot.connectionState ==
+                        ConnectionState.waiting) {
                       return CircularProgressIndicator();
                     } else if (healthDataSnapshot.hasError) {
                       return Text('Error: ${healthDataSnapshot.error}');
@@ -199,7 +201,8 @@ class PelvicTiltChart extends StatelessWidget {
               reservedSize: 30,
               getTitlesWidget: (value, meta) {
                 int index = value.toInt();
-                if (index < 0 || index >= healthDataList.length) return Text('');
+                if (index < 0 || index >= healthDataList.length)
+                  return Text('');
                 return Text(healthDataList[index].formattedDate);
               },
               interval: 1,
