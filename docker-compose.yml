@@ -9,30 +9,29 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      - db
+      - mysql
     env_file:
       - .env
     restart: always
     environment:
-      - SQLALCHEMY_DATABASE_URL=${SQLALCHEMY_DATABASE_URL}  # 사용자, 비밀번호, 데이터베이스 이름
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY}  # JWT 시크릿키
-      - JWT_ALGORITHM=${JWT_ALGORITHM}  # JWT 알고리즘을
-      - JWT_ACCESS_TOKEN_EXPIRE_MINUTES=${JWT_ACCESS_TOKEN_EXPIRE_MINUTES}  # 액세스 토큰 만료 시간
-      - JWT_REFRESH_TOKEN_EXPIRE_DAYS=${JWT_REFRESH_TOKEN_EXPIRE_DAYS}  # 리프레시 토큰 만료 시간
+      - SQLALCHEMY_DATABASE_URL=mysql+pymysql://user:12345678@mysql:3306/matchup
+      - JWT_SECRET_KEY=1234567890
+      - JWT_ALGORITHM=HS256
+      - JWT_ACCESS_TOKEN_EXPIRE_MINUTES=3000
+      - JWT_REFRESH_TOKEN_EXPIRE_DAYS=5
     networks:
       - app-network
 
   # MySQL 데이터베이스
-  db:
+  mysql:
     image: mysql:latest
-    container_name: db
     ports:
       - "3306:3306"
     environment:
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}  # MySQL 루트 비밀번호를 여기에 입력해야 합니다.
-      - MYSQL_DATABASE=${MYSQL_DATABASE}  # 데이터베이스 이름을 여기에 입력해야 합니다.
-      - MYSQL_USER=${MYSQL_USER} # MySQL 사용자를 여기에 입력해야 합니다.
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD} # MySQL 사용자의 비밀번호를 여기에 입력해야 합니다.
+      - MYSQL_ROOT_PASSWORD=matchup  # MySQL 루트 비밀번호를 여기에 입력해야 합니다.
+      - MYSQL_DATABASE=matchup  # 데이터베이스 이름을 여기에 입력해야 합니다.
+      - MYSQL_USER=user # MySQL 사용자를 여기에 입력해야 합니다.
+      - MYSQL_PASSWORD=12345678 # MySQL 사용자의 비밀번호를 여기에 입력해야 합니다.
     volumes:
       - db_data:/var/lib/mysql  # MySQL 데이터베이스를 위한 가상 볼륨 설정
     networks:
